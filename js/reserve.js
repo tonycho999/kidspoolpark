@@ -1,21 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
     const reserveForm = document.getElementById('reserveForm');
+    
+    // 🔥 알려주신 Worker 주소로 API 엔드포인트 설정 완료
+    const WORKER_URL = 'https://reservation-api.tonycho999.workers.dev/api/reserve';
 
     if (reserveForm) {
-        reserveForm.addEventListener('submit', (e) => {
-            e.preventDefault(); // 페이지 새로고침 방지
+        reserveForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-            // 입력 데이터 가져오기
-            const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
-            const people = document.getElementById('people').value;
-            const date = document.getElementById('date').value;
+            const submitBtn = reserveForm.querySelector('.submit-btn');
+            submitBtn.textContent = '예약 처리 중...';
+            submitBtn.disabled = true;
 
-            // 간단한 안내 메시지 (Cloudflare Pages 정적 환경 시뮬레이션)
-            alert(`예약이 접수되었습니다!\n\n이름: ${name}\n연락처: ${phone}\n인원: ${people}명\n날짜: ${date}\n\n* 실제 데이터 저장을 위해서는 백엔드(DB) 연동이 필요합니다.`);
-            
-            // 폼 초기화
-            reserveForm.reset();
+            const data = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                people: document.getElementById('people').value,
+                date: document.getElementById('date').value
+            };
+
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('예약이 성공적으로 접수되었습니다!');
+                    reserveForm.reset();
+                } else {
+                    alert('예약 처리 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('네트워크 오류가 발생했습니다.');
+            } finally {
+                submitBtn.textContent = '예약 신청하기';
+                submitBtn.disabled = false;
+            }
         });
     }
 });
