@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약하기</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo"><a href="index.html">예약 시스템</a></div>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <nav id="navMenu">
+            <ul>
+                <li><a href="period.html">운영기간안내</a></li>
+                <li><a href="guide.html">이용안내</a></li>
+                <li><a href="reserve.html">예약하기</a></li>
+                <li><a href="location.html">오시는길</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h2>예약하기</h2>
+        <form id="reserveForm" class="reserve-form">
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" name="name" required placeholder="예: 홍길동">
+            </div>
+            <div class="form-group">
+                <label for="phone">연락처</label>
+                <input type="tel" id="phone" name="phone" required placeholder="예: 010-1234-5678">
+            </div>
+            <div class="form-group">
+                <label for="people">인원</label>
+                <input type="number" id="people" name="people" min="1" required placeholder="예: 2">
+            </div>
+            <div class="form-group">
+                <label for="date">날짜</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+            <button type="submit" class="submit-btn">예약 신청하기</button>
+        </form>
+    </main>
+
+    <script src="js/main.js"></script>
+    <script src="js/reserve.js"></script>
+</body>
+</html>
