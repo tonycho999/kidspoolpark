@@ -4,8 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 - 예약 관리</title>
-    <!-- 상위 폴더의 css를 참조합니다 -->
     <link rel="stylesheet" href="../css/admin.css">
+    <style>
+        /* 검색 영역 스타일 간단 추가 */
+        .search-area {
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .search-area input {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 250px;
+        }
+    </style>
 </head>
 <body>
     <header class="admin-header">
@@ -15,10 +29,16 @@
 
     <main class="admin-container">
         <h2>예약 내역 리스트</h2>
+        
+        <!-- ⭐️ 검색창 추가 -->
+        <div class="search-area">
+            <input type="text" id="searchInput" placeholder="이름 또는 연락처로 검색">
+        </div>
+
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>예약일자</th>
+                    <th>예약일자 (오름차순)</th> <!-- 날짜 기준임을 명시 -->
                     <th>이름</th>
                     <th>연락처</th>
                     <th>인원</th>
@@ -26,13 +46,11 @@
                 </tr>
             </thead>
             <tbody id="reservationList">
-                <!-- 자바스크립트(admin.js)가 DB에서 데이터를 가져와 여기에 채워 넣습니다 -->
                 <tr><td colspan="5">데이터를 불러오는 중입니다...</td></tr>
             </tbody>
         </table>
     </main>
 
-    <!-- 🔥 이 부분이 추가되었습니다. 새로 만든 admin.js를 연결합니다. -->
     <script src="../js/admin.js"></script>
 </body>
 </html>
