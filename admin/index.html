@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - 예약 관리</title>
+    <!-- 상위 폴더의 css를 참조합니다 -->
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <header class="admin-header">
+        <h1>⚙️ 관리자 예약 관리 시스템</h1>
+        <a href="../index.html" class="home-btn">홈페이지로 돌아가기</a>
+    </header>
+
+    <main class="admin-container">
+        <h2>예약 내역 리스트</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>예약일자</th>
+                    <th>이름</th>
+                    <th>연락처</th>
+                    <th>인원</th>
+                    <th>상태</th>
+                </tr>
+            </thead>
+            <tbody id="reservationList">
+                <!-- 예시 데이터 -->
+                <tr>
+                    <td>2026-07-01</td>
+                    <td>홍길동</td>
+                    <td>010-1234-5678</td>
+                    <td>2명</td>
+                    <td><span class="status confirm">예약완료</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>
