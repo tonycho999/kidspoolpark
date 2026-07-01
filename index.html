@@ -7,11 +7,26 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         /* 메인 페이지 이미지 갤러리 스타일 */
+        .intro-text {
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            color: #555;
+            text-align: center;
+        }
+        /* 메인 큰 이미지 */
+        .main-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        /* 서브 이미지 그리드 */
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(3, 1fr); /* 3칸으로 고정 */
             gap: 15px;
-            margin-top: 2rem;
         }
         .gallery img {
             width: 100%;
@@ -20,16 +35,15 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
-            cursor: pointer;
         }
         .gallery img:hover {
-            transform: scale(1.03); /* 마우스 올렸을 때 살짝 커지는 효과 */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transform: scale(1.03);
         }
-        .intro-text {
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
-            color: #555;
+        /* 모바일에서는 2칸으로 */
+        @media (max-width: 768px) {
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -48,12 +62,14 @@
     </header>
 
     <main class="container">
-        <h1>환영합니다!</h1>
+        <h1 style="text-align: center;">환영합니다!</h1>
         <p class="intro-text">과천시 야외 물놀이장의 생생한 현장 모습을 확인하시고, 상단 메뉴를 통해 예약을 진행해 주세요.</p>
         
-        <!-- ⭐️ 이미지 갤러리 영역 -->
+        <!-- ⭐️ 첫 번째 사진을 메인으로 크게 배치 -->
+        <img src="public/images/과천 문원 체육공원 물놀이터 전경.png" alt="물놀이터 전경" class="main-image">
+        
+        <!-- ⭐️ 나머지 6장의 사진을 3열 그리드로 꽉 차게 배치 -->
         <div class="gallery">
-            <img src="public/images/과천 문원 체육공원 물놀이터 전경.png" alt="물놀이터 전경">
             <img src="public/images/과천 문원체육공원 물놀이터.png" alt="물놀이터 시설 1">
             <img src="public/images/과천 문원 물놀이터.png" alt="물놀이터 시설 2">
             <img src="public/images/과천 문원 체육공원 물놀이터 사진.png" alt="물놀이터 시설 3">
@@ -63,7 +79,6 @@
         </div>
     </main>
 
-    <!-- ⭐️ 수정된 푸터 (주소 및 전화번호 변경) -->
     <footer>
         <div class="company-name">케이앤와이 주식회사 (KNY Company)</div>
         <div class="footer-info">
