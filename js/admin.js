@@ -1,13 +1,17 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const reservationList = document.getElementById('reservationList');
-    const searchInput = document.getElementById('searchInput'); // 검색창
+    
+    // 필터 엘리먼트들
+    const searchInput = document.getElementById('searchInput');
+    const filterLocation = document.getElementById('filterLocation');
+    const filterDate = document.getElementById('filterDate');
+    const filterTime = document.getElementById('filterTime');
     
     const GET_URL = 'https://reservation-api.tonycho999.workers.dev/api/reservations';
     const UPDATE_URL = 'https://reservation-api.tonycho999.workers.dev/api/update-status';
 
-    let allReservations = []; // 서버에서 불러온 전체 데이터를 저장할 배열
+    let allReservations = []; 
 
-    // 리스트를 화면에 그리는 함수
     function renderTable(dataToRender) {
         reservationList.innerHTML = ''; 
 
@@ -20,10 +24,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = document.createElement('tr');
             const currentStatus = item.status || '예약대기';
 
+            const locationColor = item.location.includes('장소 1') ? '#0056b3' : '#28a745';
+            const locationBadge = `<span style="background:${locationColor}; color:white; padding:3px 6px; border-radius:3px; font-size:0.8em; margin-bottom:5px; display:inline-block;">${item.location.split(' ')[0]}</span><br>`;
+
+            const dateTimeStr = `${locationBadge}<strong>${item.date}</strong><br><span style="font-size:0.85em; color:#666;">${item.time_slot}</span>`;
+            const userInfoStr = `<strong>${item.name}</strong> (${item.phone})<br><span style="font-size:0.85em; color:#666;">${item.email} / ${item.birthdate}</span>`;
+
             row.innerHTML = `
-                <td>${item.date}</td>
-                <td>${item.name}</td>
-                <td>${item.phone}</td>
+                <td>${dateTimeStr}</td>
+                <td style="text-align:left;">${userInfoStr}</td>
+                <td style="text-align:left; font-size:0.9em; max-width:250px; word-break:keep-all;">${item.address || '-'}</td>
                 <td>${item.people}명</td>
                 <td>
                     <select class="status-select" data-id="${item.id}">
@@ -35,12 +45,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             reservationList.appendChild(row);
         });
-
-        // 선택 박스 이벤트 리스너 다시 달아주기
         attachSelectListeners();
     }
 
-    // 상태 변경 이벤트 연결 함수
     function attachSelectListeners() {
         document.querySelectorAll('.status-select').forEach(selectElement => {
             selectElement.addEventListener('change', async (e) => {
@@ -53,12 +60,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: reservationId, status: newStatus })
                     });
-
                     if (updateRes.ok) {
-                        // DB 업데이트 성공 시, 배열의 상태도 업데이트 (검색 시 유지되도록)
                         const itemToUpdate = allReservations.find(item => item.id == reservationId);
                         if (itemToUpdate) itemToUpdate.status = newStatus;
-                        
                         alert('상태가 변경되었습니다.');
                     } else {
                         alert('상태 변경에 실패했습니다.');
@@ -72,36 +76,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // ⭐️ 다중 필터링 함수
+    function applyFilters() {
+        const keyword = searchInput.value.toLowerCase().trim();
+        const loc = filterLocation.value;
+        const date = filterDate.value;
+        const time = filterTime.value;
+
+        const filteredData = allReservations.filter(item => {
+            // 1. 이름/연락처 검색
+            const matchKeyword = (item.name && item.name.toLowerCase().includes(keyword)) || 
+                                 (item.phone && item.phone.includes(keyword));
+            // 2. 장소 필터
+            const matchLoc = loc === "" || item.location.includes(loc);
+            // 3. 날짜 필터
+            const matchDate = date === "" || item.date === date;
+            // 4. 시간(회차) 필터
+            const matchTime = time === "" || item.time_slot.includes(time);
+
+            return matchKeyword && matchLoc && matchDate && matchTime;
+        });
+        renderTable(filteredData);
+    }
+
+    // 필터 이벤트 리스너 등록
+    [searchInput, filterLocation, filterDate, filterTime].forEach(el => {
+        if(el) el.addEventListener('input', applyFilters);
+    });
+
     // 초기 데이터 로드
     try {
         const response = await fetch(GET_URL);
         const data = await response.json();
-
-        // ⭐️ 1. 예약일자(date) 기준으로 오름차순(가까운 날짜순) 정렬
-        allReservations = data.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        // 처음 화면에 그리기
+        allReservations = data;
         renderTable(allReservations);
-
     } catch (error) {
-        console.error('Error:', error);
         reservationList.innerHTML = '<tr><td colspan="5">데이터를 불러오는 데 실패했습니다.</td></tr>';
-    }
-
-    // ⭐️ 2. 검색 기능 (키보드를 칠 때마다 즉시 필터링)
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const keyword = e.target.value.toLowerCase().trim();
-            
-            // 이름이나 연락처에 키워드가 포함된 데이터만 걸러내기
-            const filteredData = allReservations.filter(item => {
-                const nameMatch = item.name && item.name.toLowerCase().includes(keyword);
-                const phoneMatch = item.phone && item.phone.includes(keyword);
-                return nameMatch || phoneMatch;
-            });
-
-            // 필터링된 데이터만 다시 화면에 그리기
-            renderTable(filteredData);
-        });
     }
 });
