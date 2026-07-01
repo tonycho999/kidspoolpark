@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>예약하기</title>
     <link rel="stylesheet" href="css/style.css">
+    <!-- 우편번호 검색 API -->
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
     <header>
@@ -21,27 +23,130 @@
     </header>
 
     <main class="container">
-        <h2>예약하기</h2>
-        <form id="reserveForm" class="reserve-form">
-            <div class="form-group">
-                <label for="name">이름</label>
-                <input type="text" id="name" name="name" required placeholder="예: 홍길동">
+        <h2 style="text-align: center; margin-bottom: 2rem;">예약하기</h2>
+        
+        <div class="reserve-grid">
+            <!-- 1. 날짜 선택 (달력) -->
+            <div class="step-box">
+                <div class="step-title">날짜 선택</div>
+                <div class="calendar-header">
+                    <button type="button" id="prevMonth">&lt;</button>
+                    <span id="currentMonth">2025년 7월</span>
+                    <button type="button" id="nextMonth">&gt;</button>
+                </div>
+                <table class="calendar-table">
+                    <thead>
+                        <tr>
+                            <th style="color:red">일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th style="color:blue">토</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendarBody">
+                        <!-- JS로 달력이 그려집니다 -->
+                    </tbody>
+                </table>
+                <p class="step-desc">원하시는 날짜를 선택하세요.</p>
             </div>
-            <div class="form-group">
-                <label for="phone">연락처</label>
-                <input type="tel" id="phone" name="phone" required placeholder="예: 010-1234-5678">
+
+            <!-- 2. 시간 선택 (회차) -->
+            <div class="step-box">
+                <div class="step-title" id="selectedDateDisplay">날짜를 먼저 선택해주세요</div>
+                <div class="time-list" id="timeList">
+                    <!-- 임시 회차 데이터 -->
+                    <label class="time-item">
+                        <input type="radio" name="timeSlot" value="1회차 (11:00~11:50)">
+                        <span>1회차: 11:00 ~ 11:50 (예약가능)</span>
+                    </label>
+                    <label class="time-item">
+                        <input type="radio" name="timeSlot" value="2회차 (12:00~12:50)">
+                        <span>2회차: 12:00 ~ 12:50 (예약가능)</span>
+                    </label>
+                    <label class="time-item">
+                        <input type="radio" name="timeSlot" value="3회차 (14:00~14:50)">
+                        <span>3회차: 14:00 ~ 14:50 (예약가능)</span>
+                    </label>
+                    <label class="time-item">
+                        <input type="radio" name="timeSlot" value="4회차 (15:00~15:50)">
+                        <span>4회차: 15:00 ~ 15:50 (예약가능)</span>
+                    </label>
+                    <label class="time-item disabled">
+                        <input type="radio" name="timeSlot" disabled>
+                        <span style="color:#dc3545">5회차: 16:00 ~ 16:50 (마감)</span>
+                    </label>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="people">인원</label>
-                <input type="number" id="people" name="people" min="1" required placeholder="예: 2">
+
+            <!-- 3. 예약자 정보 입력 폼 -->
+            <div class="step-box">
+                <div class="step-title">예약자 정보</div>
+                <p class="step-desc" style="text-align: right; font-size: 0.8rem;">보호자 1인 ~ 5인 예약 가능</p>
+                <form id="reserveForm" class="detail-form">
+                    <input type="hidden" id="date" name="date" required>
+                    
+                    <div class="form-row">
+                        <label>이름 *</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>이메일 *</label>
+                        <div class="flex-row">
+                            <input type="text" id="email1" style="width:40%" required> @ 
+                            <input type="text" id="email2" style="width:50%" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>연락처 *</label>
+                        <div class="flex-row">
+                            <select id="phone1" style="width:30%"><option>010</option></select> -
+                            <input type="text" id="phone2" style="width:30%" maxlength="4" required> -
+                            <input type="text" id="phone3" style="width:30%" maxlength="4" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>생년월일 *</label>
+                        <div class="flex-row">
+                            <input type="number" id="birthYear" placeholder="YYYY" style="width:35%" required> 년
+                            <input type="number" id="birthMonth" placeholder="MM" style="width:25%" required> 월
+                            <input type="number" id="birthDay" placeholder="DD" style="width:25%" required> 일
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>주소 *</label>
+                        <div class="flex-row" style="margin-bottom: 5px;">
+                            <input type="text" id="postcode" placeholder="우편번호" readonly style="width:50%; background:#f0f0f0;">
+                            <button type="button" onclick="execDaumPostcode()" class="btn-black">주소 검색</button>
+                        </div>
+                        <input type="text" id="address1" placeholder="기본주소" readonly style="width:100%; margin-bottom:5px; background:#f0f0f0;" required>
+                        <input type="text" id="address2" placeholder="상세주소" style="width:100%;" required>
+                    </div>
+
+                    <div class="form-row">
+                        <label>인원 *</label>
+                        <div class="counter-box">
+                            <button type="button" id="btnMinus">-</button>
+                            <input type="number" id="people" value="1" min="1" max="5" readonly>
+                            <button type="button" id="btnPlus">+</button>
+                        </div>
+                    </div>
+
+                    <div class="privacy-box">
+                        <strong>개인정보 수집 및 이용 안내</strong>
+                        <p>- 수집항목: 성명, 이메일, 연락처, 생년월일, 주소</p>
+                        <p>- 이용목적: 예약 관리 및 본인 확인</p>
+                        <label class="privacy-agree">
+                            <input type="checkbox" id="privacyAgree" required> (필수) 개인정보 수집 및 이용에 동의합니다.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="submit-btn" style="margin-top: 1rem;">예약 신청하기</button>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="date">날짜</label>
-                <input type="date" id="date" name="date" required>
-            </div>
-            <button type="submit" class="submit-btn">예약 신청하기</button>
-        </form>
+        </div>
     </main>
+
     <footer>
         <div class="company-name">케이앤와이 주식회사 (KNY Company)</div>
         <div class="footer-info">
@@ -54,6 +159,7 @@
         </div>
         <div>&copy; 2026 KNY Company. All Rights Reserved.</div>
     </footer>
+
     <script src="js/main.js"></script>
     <script src="js/reserve.js"></script>
 </body>
