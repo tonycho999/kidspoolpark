@@ -34,3 +34,41 @@ nav ul li a:hover { color: #0056b3; }
     nav ul li { border-top: 1px solid #eee; }
     nav ul li a { display: block; padding: 1rem 0; }
 }
+
+/* 푸터(Footer) 영역 스타일 */
+footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-top: 3rem; /* 메인 콘텐츠와의 간격 */
+}
+
+footer .company-name {
+    font-weight: bold;
+    color: #343a40;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+footer .footer-info {
+    margin-bottom: 1rem;
+}
+
+footer .footer-info span {
+    display: inline-block;
+}
+
+/* 모바일 화면에서는 세로로 줄바꿈 처리 */
+@media (max-width: 768px) {
+    footer .divider {
+        display: none; /* 모바일에서는 구분선 숨김 */
+    }
+    footer .footer-info span {
+        display: block; /* 각 항목을 한 줄씩 표시 */
+    }
+}
+
