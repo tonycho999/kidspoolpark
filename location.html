@@ -30,33 +30,44 @@
             margin-bottom: 1rem;
             font-weight: bold;
         }
-        /* 지도 클릭 영역 가짜 이미지 (회색 배경) */
-        .map-placeholder {
+        
+        /* 지도 이미지 컨테이너 (600x375 비율 고려) */
+        .map-image-container {
             width: 100%;
-            height: 250px;
-            background-color: #e9ecef;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            transition: all 0.3s ease;
+            max-width: 600px; /* PC에서 이미지가 너무 커지지 않도록 최대 넓이 고정 */
+            margin: 0 auto;   /* 이미지 가운데 정렬 */
             position: relative;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             overflow: hidden;
+            transition: all 0.3s ease;
         }
-        .map-placeholder:hover {
+        .map-image-container:hover {
             opacity: 0.85;
             border-color: #0056b3;
+            box-shadow: 0 4px 10px rgba(0,86,179,0.2);
         }
+        .map-image-container img {
+            width: 100%;       
+            height: auto;      
+            display: block;
+            aspect-ratio: 600 / 375; /* 브라우저에 명시적인 비율(1.6:1) 제공 */
+            object-fit: cover;
+        }
+        
+        /* '지도에서 보기' 오버레이 텍스트 */
         .map-text {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
             background: rgba(0, 0, 0, 0.7);
             color: #fff;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 1.1rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
             font-weight: bold;
-            pointer-events: none; /* 텍스트 클릭 방해 방지 */
+            pointer-events: none;
         }
     </style>
 </head>
@@ -81,40 +92,41 @@
         <div class="location-card">
             <h3>📍 장소 1</h3>
             <p>경기도 과천시 갈현동 846</p>
-            <div class="map-placeholder" onclick="openNaverMap('경기도 과천시 갈현동 846')">
-                <span class="map-text">🗺️ 네이버 지도에서 보기 (클릭)</span>
+            <!-- 이미지 경로 및 클릭 이벤트 -->
+            <div class="map-image-container" onclick="openNaverMap('경기도 과천시 갈현동 846')">
+                <img src="public/images/map846.png" alt="갈현동 846 지도">
+                <span class="map-text">🗺️ 네이버 지도에서 보기</span>
             </div>
         </div>
 
         <!-- 장소 2 -->
         <div class="location-card">
-            <h3>📍 장소 2 (잭과나무 물놀이터)</h3>
-            <p>경기도 과천시 문원로 56 (문원체육공원)</p>
-            <div class="map-placeholder" onclick="openNaverMap('경기도 과천시 문원로 56')">
-                <span class="map-text">🗺️ 네이버 지도에서 보기 (클릭)</span>
+            <h3>📍 장소 2</h3>
+            <p>경기도 과천시 문원체육공원 잭과나무 물놀이터<br>(과천시 문원로 56 문원체육공원)</p>
+            <!-- 이미지 경로 및 클릭 이벤트 -->
+            <div class="map-image-container" onclick="openNaverMap('경기도 과천시 문원로 56')">
+                <img src="public/images/map56.png" alt="잭과나무 물놀이터 지도">
+                <span class="map-text">🗺️ 네이버 지도에서 보기</span>
             </div>
         </div>
     </main>
 
     <script src="js/main.js"></script>
     <script>
-        // PC와 모바일을 구분하여 네이버 지도를 여는 함수
+        // PC/모바일 구분하여 네이버 지도 여는 함수
         function openNaverMap(query) {
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             const encodedQuery = encodeURIComponent(query);
 
             if (isMobile) {
-                // [모바일 환경] 네이버 지도 앱 호출 (App Scheme)
                 const appUrl = `nmap://search?query=${encodedQuery}&appname=reservation_system`;
                 const webUrl = `https://m.map.naver.com/search2/search.naver?query=${encodedQuery}`;
                 
-                // 앱 실행을 시도하고, 앱이 설치되어 있지 않으면 0.5초 뒤에 모바일 웹 브라우저로 이동
                 setTimeout(() => {
                     window.location.href = webUrl;
                 }, 500);
                 window.location.href = appUrl;
             } else {
-                // [PC 환경] 네이버 지도 PC웹버전 새 창 열기
                 const pcUrl = `https://map.naver.com/v5/search/${encodedQuery}`;
                 window.open(pcUrl, '_blank');
             }
