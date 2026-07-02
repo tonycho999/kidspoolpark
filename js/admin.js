@@ -16,7 +16,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         reservationList.innerHTML = ''; 
 
         if (dataToRender.length === 0) {
-            reservationList.innerHTML = '<tr><td colspan="5">일치하는 예약 내역이 없습니다.</td></tr>';
+            // 컬럼이 6개로 늘어났으므로 colspan 수정
+            reservationList.innerHTML = '<tr><td colspan="6">일치하는 예약 내역이 없습니다.</td></tr>';
             return;
         }
 
@@ -32,6 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             row.innerHTML = `
                 <td>${dateTimeStr}</td>
+                <!-- ⭐️ 예약번호 출력 -->
+                <td style="font-family: monospace; font-weight: bold; color: #0056b3;">${item.reservation_code || '-'}</td>
                 <td style="text-align:left;">${userInfoStr}</td>
                 <td style="text-align:left; font-size:0.9em; max-width:250px; word-break:keep-all;">${item.address || '-'}</td>
                 <td>${item.people}명</td>
@@ -84,9 +87,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const time = filterTime.value;
 
         const filteredData = allReservations.filter(item => {
-            // 1. 이름/연락처 검색
-            const matchKeyword = (item.name && item.name.toLowerCase().includes(keyword)) || 
-                                 (item.phone && item.phone.includes(keyword));
+            // 1. ⭐️ 이름 / 연락처 / 예약번호 통합 검색
+            const matchKeyword = 
+                (item.name && item.name.toLowerCase().includes(keyword)) || 
+                (item.phone && item.phone.includes(keyword)) ||
+                (item.reservation_code && item.reservation_code.toLowerCase().includes(keyword)); // 예약번호 검색 추가
+                
             // 2. 장소 필터
             const matchLoc = loc === "" || item.location.includes(loc);
             // 3. 날짜 필터
@@ -111,6 +117,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         allReservations = data;
         renderTable(allReservations);
     } catch (error) {
-        reservationList.innerHTML = '<tr><td colspan="5">데이터를 불러오는 데 실패했습니다.</td></tr>';
+        reservationList.innerHTML = '<tr><td colspan="6">데이터를 불러오는 데 실패했습니다.</td></tr>';
     }
 });
