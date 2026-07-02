@@ -5,20 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>과천 물놀이 예약하기</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- 우편번호 검색 API -->
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <style>
-        /* 테스트 중 안내 배너 스타일 */
         .test-banner {
-            background-color: #dc3545; /* 빨간색 배경 */
-            color: white;
-            text-align: center;
-            padding: 15px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: #dc3545; color: white; text-align: center;
+            padding: 15px; font-weight: bold; font-size: 1.2rem;
+            margin-bottom: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -31,6 +23,7 @@
                 <li><a href="period.html">운영기간안내</a></li>
                 <li><a href="guide.html">이용안내</a></li>
                 <li><a href="reserve.html">예약하기</a></li>
+                <li><a href="check.html">예약조회/취소</a></li> <!-- ⭐️ 메뉴 추가됨 -->
                 <li><a href="location.html">오시는길</a></li>
             </ul>
         </nav>
@@ -38,12 +31,12 @@
 
     <main class="container reserve-container">
         
-        <!-- ⭐️ 테스트 중 안내문 추가 -->
         <div class="test-banner">
             ⚠️ 현재 시스템 테스트 중입니다. 실제 예약이 처리되지 않으니 예약을 삼가주시기 바랍니다. ⚠️
         </div>
 
         <h2 style="text-align: center; margin-bottom: 2rem;">예약하기</h2>
+        
         <div class="location-tabs" style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
             <label class="tab-label" style="cursor:pointer; padding:10px 20px; border:2px solid #0056b3; border-radius:5px; font-weight:bold;">
                 <input type="radio" name="locationSelect" value="장소 1 (갈현동)" checked style="display:none;">
@@ -56,7 +49,6 @@
         </div>
         
         <div class="reserve-grid">
-            <!-- 1. 날짜 선택 (달력) -->
             <div class="step-box">
                 <div class="step-title">날짜 선택</div>
                 <div class="calendar-header">
@@ -66,26 +58,18 @@
                 </div>
                 <table class="calendar-table">
                     <thead>
-                        <tr>
-                            <th style="color:red">일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th style="color:blue">토</th>
-                        </tr>
+                        <tr><th style="color:red">일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th style="color:blue">토</th></tr>
                     </thead>
-                    <tbody id="calendarBody">
-                        <!-- JS로 달력이 그려집니다 -->
-                    </tbody>
+                    <tbody id="calendarBody"></tbody>
                 </table>
                 <p class="step-desc">원하시는 날짜를 선택하세요.</p>
             </div>
 
-            <!-- 2. 시간 선택 (회차) -->
             <div class="step-box">
                 <div class="step-title" id="selectedDateDisplay">날짜를 먼저 선택해주세요</div>
-                <div class="time-list" id="timeList">
-                    <!-- 임시 회차 데이터 영역 -->
-                </div>
+                <div class="time-list" id="timeList"></div>
             </div>
 
-            <!-- 3. 예약자 정보 입력 폼 -->
             <div class="step-box">
                 <div class="step-title">예약자 정보</div>
                 <p class="step-desc" style="text-align: right; font-size: 0.8rem;">보호자 1인 ~ 5인 예약 가능</p>
