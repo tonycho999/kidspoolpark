@@ -7,6 +7,20 @@
     <link rel="stylesheet" href="css/style.css">
     <!-- 우편번호 검색 API -->
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <style>
+        /* 테스트 중 안내 배너 스타일 */
+        .test-banner {
+            background-color: #dc3545; /* 빨간색 배경 */
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -23,8 +37,13 @@
     </header>
 
     <main class="container reserve-container">
-        <h2 style="text-align: center; margin-bottom: 2rem;">예약하기</h2>
+        
+        <!-- ⭐️ 테스트 중 안내문 추가 -->
+        <div class="test-banner">
+            ⚠️ 현재 시스템 테스트 중입니다. 실제 예약이 처리되지 않으니 예약을 삼가주시기 바랍니다. ⚠️
+        </div>
 
+        <h2 style="text-align: center; margin-bottom: 2rem;">예약하기</h2>
         <div class="location-tabs" style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
             <label class="tab-label" style="cursor:pointer; padding:10px 20px; border:2px solid #0056b3; border-radius:5px; font-weight:bold;">
                 <input type="radio" name="locationSelect" value="장소 1 (갈현동)" checked style="display:none;">
@@ -35,7 +54,6 @@
                 <span class="tab-text" style="color:#666;">장소 2 (문원 체육공원)</span>
             </label>
         </div>
-
         
         <div class="reserve-grid">
             <!-- 1. 날짜 선택 (달력) -->
@@ -43,7 +61,7 @@
                 <div class="step-title">날짜 선택</div>
                 <div class="calendar-header">
                     <button type="button" id="prevMonth">&lt;</button>
-                    <span id="currentMonth">2025년 7월</span>
+                    <span id="currentMonth">2026년 7월</span>
                     <button type="button" id="nextMonth">&gt;</button>
                 </div>
                 <table class="calendar-table">
@@ -63,27 +81,7 @@
             <div class="step-box">
                 <div class="step-title" id="selectedDateDisplay">날짜를 먼저 선택해주세요</div>
                 <div class="time-list" id="timeList">
-                    <!-- 임시 회차 데이터 -->
-                    <label class="time-item">
-                        <input type="radio" name="timeSlot" value="1회차 (11:00~11:50)">
-                        <span>1회차: 11:00 ~ 11:50 (예약가능)</span>
-                    </label>
-                    <label class="time-item">
-                        <input type="radio" name="timeSlot" value="2회차 (12:00~12:50)">
-                        <span>2회차: 12:00 ~ 12:50 (예약가능)</span>
-                    </label>
-                    <label class="time-item">
-                        <input type="radio" name="timeSlot" value="3회차 (14:00~14:50)">
-                        <span>3회차: 14:00 ~ 14:50 (예약가능)</span>
-                    </label>
-                    <label class="time-item">
-                        <input type="radio" name="timeSlot" value="4회차 (15:00~15:50)">
-                        <span>4회차: 15:00 ~ 15:50 (예약가능)</span>
-                    </label>
-                    <label class="time-item disabled">
-                        <input type="radio" name="timeSlot" disabled>
-                        <span style="color:#dc3545">5회차: 16:00 ~ 16:50 (마감)</span>
-                    </label>
+                    <!-- 임시 회차 데이터 영역 -->
                 </div>
             </div>
 
