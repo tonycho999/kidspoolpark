@@ -1,11 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // === ⭐️ 2026년 운영 정책 설정 ===
     const RULES = {
         "장소 1 (갈현동)": {
             start: "2026-07-25",
             end: "2026-08-17",
-            closedDays: [2], // 매주 화요일(2) 휴장
+            closedDays: [2],
             capacity: 130,   
             slots: [
                 "1회차 (10:00~11:00)", "2회차 (11:30~12:30)", 
@@ -15,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "장소 2 (문원 체육공원)": {
             start: "2026-07-11",
             end: "2026-08-17",
-            closedDays: [1], // 매주 월요일(1) 휴장
+            closedDays: [1],
             exceptions: ["2026-08-17"], 
             capacity: 60,    
             slots: [
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const API_BASE = 'https://reservation-api.tonycho999.workers.dev';
 
-    // (참고: 현재 시스템이 2026년 기준이므로, 달력도 2026년 7월로 기본 세팅합니다)
     let currentYear = 2026;
     let currentMonth = 7;
     
@@ -42,12 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedDateDisplay = document.getElementById('selectedDateDisplay');
     const hiddenDateInput = document.getElementById('date');
 
-    // ⭐️ 오늘 날짜와 7일 뒤 날짜 계산 (테스트를 위해 오늘을 2026년 7월 1일로 가정한 코드를 쓰셔도 되고, 실제 Date를 쓰셔도 됩니다. 여기서는 실제 오늘 기준 7일 계산 방식을 적용합니다.)
     const today = new Date();
-    // (테스트용 강제 날짜 세팅 시: const today = new Date('2026-07-10'); 처럼 사용 가능)
     today.setHours(0, 0, 0, 0); 
     const maxBookableDate = new Date(today);
-    maxBookableDate.setDate(today.getDate() + 7); // 오늘로부터 딱 7일 뒤까지만 예약 가능
+    maxBookableDate.setDate(today.getDate() + 7);
 
     function renderDefaultTimeSlots(locationName) {
         const rule = RULES[locationName];
@@ -90,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // === 달력 그리기 로직 (운영기간 + 휴장일 + ⭐️ 7일 예약 제한 적용) ===
     function isSelectable(dateStr, rule) {
         const targetDate = new Date(dateStr);
         targetDate.setHours(0, 0, 0, 0);
@@ -98,14 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const start = new Date(rule.start);
         const end = new Date(rule.end);
         
-        // 1. 장소별 기본 운영기간 및 휴장일 체크
         if (targetDate < start || targetDate > end) return false;
         if (!rule.exceptions?.includes(dateStr) && rule.closedDays.includes(targetDate.getDay())) return false;
-        
-        // 2. ⭐️ 오늘 이전 날짜는 예약 불가 (과거)
         if (targetDate < today) return false;
-        
-        // 3. ⭐️ 오늘 기준 7일 이후 날짜는 아직 예약 불가 (오픈 안됨)
         if (targetDate > maxBookableDate) return false;
 
         return true;
@@ -115,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarBody.innerHTML = '';
         currentMonthDisplay.textContent = `${year}년 ${month}월`;
         
-        // ⭐️ 달력 하단에 7일 제한 안내문구 추가
         const stepDesc = document.querySelector('.calendar-table').nextElementSibling;
         if (stepDesc) {
             stepDesc.innerHTML = `원하시는 날짜를 선택하세요.<br><span style="color:#d9534f; font-weight:bold; font-size:0.9em;">(예약은 이용일 7일 전부터 가능합니다)</span>`;
@@ -140,9 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         cell.style.cursor = 'pointer';
                         cell.addEventListener('click', () => handleDateClick(cell, dateStr));
                     } else {
-                        // 선택 불가능한 날짜 (휴장일이거나 7일 범위 밖인 경우)
                         cell.classList.add('disabled');
-                        cell.title = '휴장일이거나 아직 예약이 오픈되지 않은 날짜입니다.';
+                        cell.title = '휴장일이거나 예약이 불가한 날짜입니다.';
                     }
                     date++;
                 }
@@ -259,11 +247,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                if (response.ok) {
-                    alert('예약이 성공적으로 접수되었습니다!');
+                
+                const result = await response.json(); 
+                
+                if (response.ok && result.success) {
+                    alert(`예약이 성공적으로 접수되었습니다!\n\n⭐️ 예약 번호: [ ${result.reservation_code} ]\n\n추후 예약 조회/취소 시 필요하오니 반드시 메모해 두시기 바랍니다.`);
                     location.reload(); 
                 } else {
-                    alert('예약 처리 중 오류가 발생했습니다.');
+                    alert(`예약 처리 중 오류가 발생했습니다: ${result.error || '알 수 없는 오류'}`);
                 }
             } catch (error) {
                 alert('네트워크 오류가 발생했습니다.');
