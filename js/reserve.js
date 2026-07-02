@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
             start: "2026-07-25",
             end: "2026-08-17",
             closedDays: [2], // 매주 화요일(2) 휴장
-            capacity: 130,   // 회당 정원 130명
+            capacity: 130,   
             slots: [
                 "1회차 (10:00~11:00)", "2회차 (11:30~12:30)", 
                 "3회차 (13:00~14:00)", "4회차 (14:30~15:30)", "5회차 (16:00~17:00)"
@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
             start: "2026-07-11",
             end: "2026-08-17",
             closedDays: [1], // 매주 월요일(1) 휴장
-            exceptions: ["2026-08-17"], // 8/17(월)은 정상운영 예외
-            capacity: 60,    // 회당 정원 60명
+            exceptions: ["2026-08-17"], 
+            capacity: 60,    
             slots: [
                 "1회차 (11:00~11:50)", "2회차 (12:00~12:50)", "3회차 (14:00~14:50)",
                 "4회차 (15:00~15:50)", "5회차 (16:00~16:50)", "6회차 (17:00~17:50)"
@@ -27,13 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const API_BASE = 'https://reservation-api.tonycho999.workers.dev';
 
+    // (참고: 현재 시스템이 2026년 기준이므로, 달력도 2026년 7월로 기본 세팅합니다)
     let currentYear = 2026;
     let currentMonth = 7;
     
-    // 처음에 체크된 탭의 value 값을 가져옴 (예: "장소 1 (갈현동)")
     let selectedLocation = document.querySelector('input[name="locationSelect"]:checked')?.value;
-    
-    // 혹시 value가 없다면 기본값 설정
     if (!selectedLocation || !RULES[selectedLocation]) {
         selectedLocation = "장소 1 (갈현동)"; 
     }
@@ -44,16 +42,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedDateDisplay = document.getElementById('selectedDateDisplay');
     const hiddenDateInput = document.getElementById('date');
 
-    // ⭐️ 1. 날짜를 선택하기 전에 기본 시간표를 비활성화 상태로 그려주는 함수
+    // ⭐️ 오늘 날짜와 7일 뒤 날짜 계산 (테스트를 위해 오늘을 2026년 7월 1일로 가정한 코드를 쓰셔도 되고, 실제 Date를 쓰셔도 됩니다. 여기서는 실제 오늘 기준 7일 계산 방식을 적용합니다.)
+    const today = new Date();
+    // (테스트용 강제 날짜 세팅 시: const today = new Date('2026-07-10'); 처럼 사용 가능)
+    today.setHours(0, 0, 0, 0); 
+    const maxBookableDate = new Date(today);
+    maxBookableDate.setDate(today.getDate() + 7); // 오늘로부터 딱 7일 뒤까지만 예약 가능
+
     function renderDefaultTimeSlots(locationName) {
         const rule = RULES[locationName];
         if (!rule) return;
 
-        timeListContainer.innerHTML = ''; // 초기화
+        timeListContainer.innerHTML = ''; 
         
         rule.slots.forEach(slot => {
             const label = document.createElement('label');
-            label.className = 'time-item disabled'; // 비활성화 스타일 적용
+            label.className = 'time-item disabled'; 
             label.innerHTML = `
                 <input type="radio" name="timeSlot" value="${slot}" disabled>
                 <span style="color:#999;">
@@ -65,11 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === 2. 장소 선택 이벤트 ===
     const locationRadios = document.querySelectorAll('input[name="locationSelect"]');
     locationRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
-            // 탭 디자인 변경
             document.querySelectorAll('.tab-label').forEach(label => {
                 label.style.borderColor = '#ccc';
                 label.querySelector('.tab-text').style.color = '#666';
@@ -79,32 +81,45 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.parentElement.querySelector('.tab-text').style.color = '#0056b3';
             e.target.parentElement.querySelector('.tab-text').style.fontWeight = 'bold';
             
-            // 데이터 초기화
             selectedLocation = e.target.value;
             hiddenDateInput.value = ''; 
             selectedDateDisplay.textContent = '날짜를 먼저 선택해주세요';
             
-            // 달력 다시 그리기 & 기본 시간표 그리기
             renderCalendar(currentYear, currentMonth);
             renderDefaultTimeSlots(selectedLocation); 
         });
     });
 
-    // === 3. 달력 그리기 로직 (운영기간 및 휴장일 적용) ===
+    // === 달력 그리기 로직 (운영기간 + 휴장일 + ⭐️ 7일 예약 제한 적용) ===
     function isSelectable(dateStr, rule) {
-        const d = new Date(dateStr);
+        const targetDate = new Date(dateStr);
+        targetDate.setHours(0, 0, 0, 0);
+        
         const start = new Date(rule.start);
         const end = new Date(rule.end);
         
-        if (d < start || d > end) return false;
-        if (rule.exceptions && rule.exceptions.includes(dateStr)) return true;
-        if (rule.closedDays.includes(d.getDay())) return false;
+        // 1. 장소별 기본 운영기간 및 휴장일 체크
+        if (targetDate < start || targetDate > end) return false;
+        if (!rule.exceptions?.includes(dateStr) && rule.closedDays.includes(targetDate.getDay())) return false;
+        
+        // 2. ⭐️ 오늘 이전 날짜는 예약 불가 (과거)
+        if (targetDate < today) return false;
+        
+        // 3. ⭐️ 오늘 기준 7일 이후 날짜는 아직 예약 불가 (오픈 안됨)
+        if (targetDate > maxBookableDate) return false;
+
         return true;
     }
 
     function renderCalendar(year, month) {
         calendarBody.innerHTML = '';
         currentMonthDisplay.textContent = `${year}년 ${month}월`;
+        
+        // ⭐️ 달력 하단에 7일 제한 안내문구 추가
+        const stepDesc = document.querySelector('.calendar-table').nextElementSibling;
+        if (stepDesc) {
+            stepDesc.innerHTML = `원하시는 날짜를 선택하세요.<br><span style="color:#d9534f; font-weight:bold; font-size:0.9em;">(예약은 이용일 7일 전부터 가능합니다)</span>`;
+        }
         
         const firstDay = new Date(year, month - 1, 1).getDay();
         const lastDate = new Date(year, month, 0).getDate();
@@ -125,8 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         cell.style.cursor = 'pointer';
                         cell.addEventListener('click', () => handleDateClick(cell, dateStr));
                     } else {
+                        // 선택 불가능한 날짜 (휴장일이거나 7일 범위 밖인 경우)
                         cell.classList.add('disabled');
-                        cell.title = '휴장일 또는 운영기간 아님';
+                        cell.title = '휴장일이거나 아직 예약이 오픈되지 않은 날짜입니다.';
                     }
                     date++;
                 }
@@ -137,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 이전/다음 달 버튼
     document.getElementById('prevMonth').addEventListener('click', () => {
         if (currentMonth === 1) { currentMonth = 12; currentYear--; } else { currentMonth--; }
         renderCalendar(currentYear, currentMonth);
@@ -147,14 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCalendar(currentYear, currentMonth);
     });
 
-    // === 4. 날짜 클릭 시 실시간 잔여인원 로드 ===
     async function handleDateClick(cell, dateStr) {
         document.querySelectorAll('#calendarBody td').forEach(td => td.classList.remove('selected'));
         cell.classList.add('selected');
         
         hiddenDateInput.value = dateStr;
-        
-        // ⭐️ (요청사항) 뒤에 붙던 (장소) 텍스트를 제거하고 날짜만 깔끔하게 표시
         selectedDateDisplay.textContent = dateStr; 
         
         timeListContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">잔여 인원 조회 중...</p>';
@@ -194,15 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             timeListContainer.innerHTML = '<p style="color:red; text-align:center;">데이터를 불러오는 데 실패했습니다.</p>';
-            renderDefaultTimeSlots(selectedLocation); // 실패 시 다시 기본 시간표 표시
+            renderDefaultTimeSlots(selectedLocation); 
         }
     }
 
-    // ⭐️ 페이지가 처음 켜질 때, 달력을 그리고 기본 시간표도 미리 그려둠
     renderCalendar(currentYear, currentMonth);
     renderDefaultTimeSlots(selectedLocation);
 
-    // === 5. 인원수 증감 로직 ===
     const btnMinus = document.getElementById('btnMinus');
     const btnPlus = document.getElementById('btnPlus');
     const peopleInput = document.getElementById('people');
@@ -211,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPlus.addEventListener('click', () => { let val = parseInt(peopleInput.value); if (val < 5) peopleInput.value = val + 1; });
     }
 
-    // === 6. 폼 제출 로직 ===
     const reserveForm = document.getElementById('reserveForm');
     if (reserveForm) {
         reserveForm.addEventListener('submit', async (e) => {
@@ -266,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 다음 우편번호 API
 function execDaumPostcode() {
     new daum.Postcode({
         oncomplete: function(data) {
