@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // === ⭐️ 실시간 예약 가능 여부 확인 로직 (5일 전 오전 10시 오픈) ===
+    // === ⭐️ 실시간 예약 가능 여부 확인 로직 (1일 전 오전 10시 오픈) ===
     function isSelectable(dateStr, rule) {
         const [y, m, d] = dateStr.split('-').map(Number);
         
@@ -100,10 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetDate < start || targetDate > end) return false;
         if (!rule.exceptions?.includes(dateStr) && rule.closedDays.includes(targetDate.getDay())) return false;
 
-        // 2. 예약 오픈 시간 계산 (대상 날짜 기준 5일 전 오전 10시)
-        const openTime = new Date(y, m - 1, d - 5, 10, 0, 0);
+        // 2. 예약 오픈 시간 계산 (대상 날짜 기준 1일 전 오전 10시) ⭐️ 수정됨
+        const openTime = new Date(y, m - 1, d - 1, 10, 0, 0);
 
-        // 3. 현재 한국 시간(KST) 구하기 (접속자의 지역/기기 시간에 영향받지 않도록)
+        // 3. 현재 한국 시간(KST) 구하기
         const formatter = new Intl.DateTimeFormat('en-US', {
             timeZone: 'Asia/Seoul',
             year: 'numeric', month: '2-digit', day: '2-digit',
@@ -112,27 +112,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const parts = formatter.formatToParts(new Date());
         const kst = {};
         parts.forEach(p => kst[p.type] = p.value);
-        // 계산용 현재 KST 객체
         const currentKst = new Date(kst.year, kst.month - 1, kst.day, kst.hour, kst.minute, kst.second);
         
-        // 4. 아직 오픈 시간 전이라면 예약 불가 (비활성화)
+        // 4. 아직 오픈 시간 전이라면 예약 불가
         if (currentKst < openTime) return false;
 
         // 5. 이미 지나간 과거 날짜 예약 불가
         const currentOnlyDate = new Date(kst.year, kst.month - 1, kst.day, 0, 0, 0);
         if (currentOnlyDate > targetDate) return false;
 
-        return true; // 위 조건을 모두 통과하면 예약 가능!
+        return true; 
     }
 
     function renderCalendar(year, month) {
         calendarBody.innerHTML = '';
         currentMonthDisplay.textContent = `${year}년 ${month}월`;
         
-        // 달력 하단 안내 문구
+        // 달력 하단 안내 문구 ⭐️ 수정됨
         const stepDesc = document.querySelector('.calendar-table').nextElementSibling;
         if (stepDesc) {
-            stepDesc.innerHTML = `원하시는 날짜를 선택하세요.<br><span style="color:#0056b3; font-weight:bold; font-size:0.9em;">(예약은 이용일 5일 전 오전 10시에 오픈됩니다)</span>`;
+            stepDesc.innerHTML = `원하시는 날짜를 선택하세요.<br><span style="color:#0056b3; font-weight:bold; font-size:0.9em;">(예약은 이용일 하루 전 오전 10시에 오픈됩니다)</span>`;
         }
         
         const firstDay = new Date(year, month - 1, 1).getDay();
@@ -155,8 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         cell.addEventListener('click', () => handleDateClick(cell, dateStr));
                     } else {
                         cell.classList.add('disabled');
-                        // 툴팁(마우스 오버) 설명
-                        cell.title = '아직 예약이 오픈되지 않았거나 예약 불가한 날짜입니다.\n(이용일 5일 전 오전 10시 오픈)';
+                        // 툴팁(마우스 오버) 설명 ⭐️ 수정됨
+                        cell.title = '아직 예약이 오픈되지 않았거나 예약 불가한 날짜입니다.\n(이용일 하루 전 오전 10시 오픈)';
                     }
                     date++;
                 }
