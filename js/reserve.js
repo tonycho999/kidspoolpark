@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // === ⭐️ 2026년 운영 정책 설정 ===
     const RULES = {
         "장소 1 (갈현동)": {
             start: "2026-07-25",
             end: "2026-08-17",
-            closedDays: [2],
+            closedDays: [2], // 매주 화요일(2) 휴장
             capacity: 130,   
             slots: [
                 "1회차 (10:00~11:00)", "2회차 (11:30~12:30)", 
@@ -14,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "장소 2 (문원 체육공원)": {
             start: "2026-07-11",
             end: "2026-08-17",
-            closedDays: [1],
+            closedDays: [1], // 매주 월요일(1) 휴장
             exceptions: ["2026-08-17"], 
             capacity: 60,    
             slots: [
@@ -40,17 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedDateDisplay = document.getElementById('selectedDateDisplay');
     const hiddenDateInput = document.getElementById('date');
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); 
-    const maxBookableDate = new Date(today);
-    maxBookableDate.setDate(today.getDate() + 7);
-
+    // 기본 시간표 비활성화 렌더링
     function renderDefaultTimeSlots(locationName) {
         const rule = RULES[locationName];
         if (!rule) return;
 
         timeListContainer.innerHTML = ''; 
-        
         rule.slots.forEach(slot => {
             const label = document.createElement('label');
             label.className = 'time-item disabled'; 
@@ -65,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 장소 탭 변경 이벤트
     const locationRadios = document.querySelectorAll('input[name="locationSelect"]');
     locationRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -86,28 +83,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // === ⭐️ 실시간 예약 가능 여부 확인 로직 (5일 전 오전 10시 오픈) ===
     function isSelectable(dateStr, rule) {
-        const targetDate = new Date(dateStr);
-        targetDate.setHours(0, 0, 0, 0);
+        const [y, m, d] = dateStr.split('-').map(Number);
         
+        // 대상(예약하려는) 날짜
+        const targetDate = new Date(y, m - 1, d, 0, 0, 0);
+        
+        // 운영 기간 설정
         const start = new Date(rule.start);
         const end = new Date(rule.end);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
         
+        // 1. 기본 운영기간 및 휴장일 체크
         if (targetDate < start || targetDate > end) return false;
         if (!rule.exceptions?.includes(dateStr) && rule.closedDays.includes(targetDate.getDay())) return false;
-        if (targetDate < today) return false;
-        if (targetDate > maxBookableDate) return false;
 
-        return true;
+        // 2. 예약 오픈 시간 계산 (대상 날짜 기준 5일 전 오전 10시)
+        const openTime = new Date(y, m - 1, d - 5, 10, 0, 0);
+
+        // 3. 현재 한국 시간(KST) 구하기 (접속자의 지역/기기 시간에 영향받지 않도록)
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Seoul',
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        });
+        const parts = formatter.formatToParts(new Date());
+        const kst = {};
+        parts.forEach(p => kst[p.type] = p.value);
+        // 계산용 현재 KST 객체
+        const currentKst = new Date(kst.year, kst.month - 1, kst.day, kst.hour, kst.minute, kst.second);
+        
+        // 4. 아직 오픈 시간 전이라면 예약 불가 (비활성화)
+        if (currentKst < openTime) return false;
+
+        // 5. 이미 지나간 과거 날짜 예약 불가
+        const currentOnlyDate = new Date(kst.year, kst.month - 1, kst.day, 0, 0, 0);
+        if (currentOnlyDate > targetDate) return false;
+
+        return true; // 위 조건을 모두 통과하면 예약 가능!
     }
 
     function renderCalendar(year, month) {
         calendarBody.innerHTML = '';
         currentMonthDisplay.textContent = `${year}년 ${month}월`;
         
+        // 달력 하단 안내 문구
         const stepDesc = document.querySelector('.calendar-table').nextElementSibling;
         if (stepDesc) {
-            stepDesc.innerHTML = `원하시는 날짜를 선택하세요.<br><span style="color:#d9534f; font-weight:bold; font-size:0.9em;">(예약은 이용일 7일 전부터 가능합니다)</span>`;
+            stepDesc.innerHTML = `원하시는 날짜를 선택하세요.<br><span style="color:#0056b3; font-weight:bold; font-size:0.9em;">(예약은 이용일 5일 전 오전 10시에 오픈됩니다)</span>`;
         }
         
         const firstDay = new Date(year, month - 1, 1).getDay();
@@ -130,7 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         cell.addEventListener('click', () => handleDateClick(cell, dateStr));
                     } else {
                         cell.classList.add('disabled');
-                        cell.title = '휴장일이거나 예약이 불가한 날짜입니다.';
+                        // 툴팁(마우스 오버) 설명
+                        cell.title = '아직 예약이 오픈되지 않았거나 예약 불가한 날짜입니다.\n(이용일 5일 전 오전 10시 오픈)';
                     }
                     date++;
                 }
@@ -141,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 달력 좌우 이동
     document.getElementById('prevMonth').addEventListener('click', () => {
         if (currentMonth === 1) { currentMonth = 12; currentYear--; } else { currentMonth--; }
         renderCalendar(currentYear, currentMonth);
@@ -150,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCalendar(currentYear, currentMonth);
     });
 
+    // === 잔여인원 로드 ===
     async function handleDateClick(cell, dateStr) {
         document.querySelectorAll('#calendarBody td').forEach(td => td.classList.remove('selected'));
         cell.classList.add('selected');
@@ -201,6 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar(currentYear, currentMonth);
     renderDefaultTimeSlots(selectedLocation);
 
+    // === 인원수 증감 및 폼 제출 ===
     const btnMinus = document.getElementById('btnMinus');
     const btnPlus = document.getElementById('btnPlus');
     const peopleInput = document.getElementById('people');
@@ -254,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(`예약이 성공적으로 접수되었습니다!\n\n⭐️ 예약 번호: [ ${result.reservation_code} ]\n\n추후 예약 조회/취소 시 필요하오니 반드시 메모해 두시기 바랍니다.`);
                     location.reload(); 
                 } else {
-                    alert(`예약 처리 중 오류가 발생했습니다: ${result.error || '알 수 없는 오류'}`);
+                    alert(`예약 처리 중 오류가 발생했습니다: ${result.message || result.error || '알 수 없는 오류'}`);
                 }
             } catch (error) {
                 alert('네트워크 오류가 발생했습니다.');
