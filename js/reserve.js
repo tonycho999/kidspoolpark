@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 address: address
             };
 
-            try {
+        try {
                 const response = await fetch(`${API_BASE}/api/reserve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -315,14 +315,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json(); 
                 
                 if (response.ok && result.success) {
-                    alert(`예약이 성공적으로 접수되었습니다!\n\n⭐️ 예약 번호: [ ${result.reservation_code} ]\n\n추후 예약 조회/취소 시 필요하오니 반드시 메모해 두시기 바랍니다.`);
-                    location.reload(); 
+                    // ⭐️ 팝업(alert) 대신 화면에 결과창 렌더링
+                    const formContainer = reserveForm.parentElement;
+                    formContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #ddd; margin-top: 1rem;">
+                            <h3 style="color: #28a745; margin-bottom: 1rem;">🎉 예약이 성공적으로 접수되었습니다!</h3>
+                            <p style="color: #666; margin-bottom: 1rem;">추후 예약 조회/취소 시 필요하오니 아래 예약 번호를 반드시 복사해 두세요.</p>
+                            
+                            <div style="margin: 1.5rem auto; padding: 1rem; background: #fff; border: 2px dashed #0056b3; font-size: 1.8rem; font-weight: bold; color: #0056b3; width: 80%; letter-spacing: 2px;">
+                                ${result.reservation_code}
+                            </div>
+                            
+                            <button type="button" onclick="navigator.clipboard.writeText('${result.reservation_code}').then(() => alert('예약 번호가 복사되었습니다!'))" class="btn-black" style="padding: 10px 20px; font-size: 1rem; margin-bottom: 1.5rem; cursor: pointer;">
+                                📋 예약 번호 복사하기
+                            </button>
+                            <br>
+                            <button type="button" onclick="location.reload()" class="submit-btn" style="width: auto; padding: 10px 30px;">확인 (초기화)</button>
+                        </div>
+                    `;
+                    // 결과창으로 스크롤 부드럽게 이동
+                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
                 } else {
                     alert(`예약 처리 중 오류가 발생했습니다: ${result.message || result.error || '알 수 없는 오류'}`);
+                    submitBtn.textContent = '예약 신청하기';
+                    submitBtn.disabled = false;
                 }
             } catch (error) {
                 alert('네트워크 오류가 발생했습니다.');
-            } finally {
                 submitBtn.textContent = '예약 신청하기';
                 submitBtn.disabled = false;
             }
