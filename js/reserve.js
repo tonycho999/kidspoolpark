@@ -1,18 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // === ⭐️ 2026년 운영 정책 설정 ===
+    // === ⭐️ 2026년 운영 정책 설정 (장소 순서 및 매핑 수정 완료) ===
     const RULES = {
-        "장소 1 (갈현동)": {
-            start: "2026-07-25",
-            end: "2026-08-17",
-            closedDays: [2], // 매주 화요일(2) 휴장
-            capacity: 130,   
-            slots: [
-                "1회차 (10:00~11:00)", "2회차 (11:30~12:30)", 
-                "3회차 (13:00~14:00)", "4회차 (14:30~15:30)", "5회차 (16:00~17:00)"
-            ]
-        },
-        "장소 2 (문원 체육공원)": {
+        "장소 1 (문원 체육공원)": {
             start: "2026-07-11",
             end: "2026-08-17",
             closedDays: [1], // 매주 월요일(1) 휴장
@@ -21,6 +11,16 @@ document.addEventListener('DOMContentLoaded', () => {
             slots: [
                 "1회차 (11:00~11:50)", "2회차 (12:00~12:50)", "3회차 (14:00~14:50)",
                 "4회차 (15:00~15:50)", "5회차 (16:00~16:50)", "6회차 (17:00~17:50)"
+            ]
+        },
+        "장소 2 (갈현동)": {
+            start: "2026-07-25",
+            end: "2026-08-17",
+            closedDays: [2], // 매주 화요일(2) 휴장
+            capacity: 130,   
+            slots: [
+                "1회차 (10:00~11:00)", "2회차 (11:30~12:30)", 
+                "3회차 (13:00~14:00)", "4회차 (14:30~15:30)", "5회차 (16:00~17:00)"
             ]
         }
     };
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let selectedLocation = document.querySelector('input[name="locationSelect"]:checked')?.value;
     if (!selectedLocation || !RULES[selectedLocation]) {
-        selectedLocation = "장소 1 (갈현동)"; 
+        selectedLocation = "장소 1 (문원 체육공원)"; 
     }
 
     const calendarBody = document.getElementById('calendarBody');
@@ -83,11 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // === ⭐️ 실시간 예약 가능 여부 확인 로직 (1일 전 오전 10시 오픈) ===
+    // === ⭐️ 주차별 예약 오픈 스케줄 반영 로직 ===
     function isSelectable(dateStr, rule) {
         const [y, m, d] = dateStr.split('-').map(Number);
         
-        // 대상(예약하려는) 날짜
+        // 대상(예약하려는) 날짜 객체 생성
         const targetDate = new Date(y, m - 1, d, 0, 0, 0);
         
         // 운영 기간 설정
@@ -100,8 +100,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetDate < start || targetDate > end) return false;
         if (!rule.exceptions?.includes(dateStr) && rule.closedDays.includes(targetDate.getDay())) return false;
 
-        // 2. 예약 오픈 시간 계산 (대상 날짜 기준 1일 전 오전 10시) ⭐️ 수정됨
-        const openTime = new Date(y, m - 1, d - 1, 10, 0, 0);
+        // 2. 주차별 월요일 오전 10시 오픈 매핑 테이블 매칭 ⭐️
+        let openTimeISO = "";
+        if (selectedLocation === "장소 1 (문원 체육공원)") {
+            if (dateStr >= "2026-07-11" && dateStr <= "2026-07-19") openTimeISO = "2026-07-06T10:00:00";
+            else if (dateStr >= "2026-07-20" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
+            else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
+            else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
+            else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
+        } else if (selectedLocation === "장소 2 (갈현동)") {
+            if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
+            else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
+            else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
+            else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
+        }
+
+        // 범위에 속하지 않는 예외 날짜 예약 차단
+        if (!openTimeISO) return false;
+
+        const [oy, om, od] = openTimeISO.split('T')[0].split('-').map(Number);
+        const [oh, omin, os] = openTimeISO.split('T')[1].split(':').map(Number);
+        const openTime = new Date(oy, om - 1, od, oh, omin, os);
 
         // 3. 현재 한국 시간(KST) 구하기
         const formatter = new Intl.DateTimeFormat('en-US', {
@@ -114,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         parts.forEach(p => kst[p.type] = p.value);
         const currentKst = new Date(kst.year, kst.month - 1, kst.day, kst.hour, kst.minute, kst.second);
         
-        // 4. 아직 오픈 시간 전이라면 예약 불가
+        // 4. 아직 지정된 오픈 시간 전이라면 예약 불가
         if (currentKst < openTime) return false;
 
         // 5. 이미 지나간 과거 날짜 예약 불가
@@ -128,10 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarBody.innerHTML = '';
         currentMonthDisplay.textContent = `${year}년 ${month}월`;
         
-        // 달력 하단 안내 문구 ⭐️ 수정됨
+        // 달력 하단 안내 문구 수정 ⭐️
         const stepDesc = document.querySelector('.calendar-table').nextElementSibling;
         if (stepDesc) {
-            stepDesc.innerHTML = `원하시는 날짜를 선택하세요.<br><span style="color:#0056b3; font-weight:bold; font-size:0.9em;">(예약은 이용일 하루 전 오전 10시에 오픈됩니다)</span>`;
+            stepDesc.innerHTML = `원하시는 날짜를 선택하세요.<br><span style="color:#0056b3; font-weight:bold; font-size:0.9em;">(예약은 매주 월요일 오전 10시에 차례로 오픈됩니다)</span>`;
         }
         
         const firstDay = new Date(year, month - 1, 1).getDay();
@@ -154,8 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         cell.addEventListener('click', () => handleDateClick(cell, dateStr));
                     } else {
                         cell.classList.add('disabled');
-                        // 툴팁(마우스 오버) 설명 ⭐️ 수정됨
-                        cell.title = '아직 예약이 오픈되지 않았거나 예약 불가한 날짜입니다.\n(이용일 하루 전 오전 10시 오픈)';
+                        // 툴팁(마우스 오버) 설명 문구 수정 ⭐️
+                        cell.title = '아직 예약이 오픈되지 않았거나 예약 불가한 날짜(휴장일 등)입니다.\n(예약은 매주 월요일 오전 10시 오픈)';
                     }
                     date++;
                 }
