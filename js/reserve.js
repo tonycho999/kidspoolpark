@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // === ⭐️ 2026년 운영 정책 설정 (장소 순서 및 매핑 수정 완료) ===
     const RULES = {
         "장소 1 (문원 체육공원)": {
-            start: "2026-07-11",
+            start: "2026-07-05",
             end: "2026-08-17",
             closedDays: [1], // 매주 월요일(1) 휴장
             exceptions: ["2026-08-17"], 
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. 주차별 월요일 오전 10시 오픈 매핑 테이블 매칭 ⭐️
         let openTimeISO = "";
         if (selectedLocation === "장소 1 (문원 체육공원)") {
-            if (dateStr >= "2026-07-11" && dateStr <= "2026-07-19") openTimeISO = "2026-07-06T10:00:00";
+            if (dateStr >= "2026-07-05" && dateStr <= "2026-07-19") openTimeISO = "2026-07-06T10:00:00";
             else if (dateStr >= "2026-07-20" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
             else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
