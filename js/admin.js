@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         reservationList.innerHTML = ''; 
 
         if (dataToRender.length === 0) {
-            // 컬럼이 6개로 늘어났으므로 colspan 수정
             reservationList.innerHTML = '<tr><td colspan="6">일치하는 예약 내역이 없습니다.</td></tr>';
             return;
         }
@@ -25,15 +24,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = document.createElement('tr');
             const currentStatus = item.status || '예약대기';
 
-            const locationColor = item.location.includes('장소 1') ? '#0056b3' : '#28a745';
-            const locationBadge = `<span style="background:${locationColor}; color:white; padding:3px 6px; border-radius:3px; font-size:0.8em; margin-bottom:5px; display:inline-block;">${item.location.split(' ')[0]}</span><br>`;
+            // ⭐️ 뱃지 텍스트 및 색상 반전 수정 로직
+            const isMunyhyeon = item.location.includes('장소 1');
+            const locationColor = isMunyhyeon ? '#0056b3' : '#28a745'; // 장소1=블루(#0056b3), 장소2=녹색(#28a745)
+            const locationText = isMunyhyeon ? '문현동' : '갈현동';     // 텍스트 매핑 변경
+
+            const locationBadge = `<span style="background:${locationColor}; color:white; padding:3px 6px; border-radius:3px; font-size:0.8em; margin-bottom:5px; display:inline-block; font-weight:bold;">${locationText}</span><br>`;
 
             const dateTimeStr = `${locationBadge}<strong>${item.date}</strong><br><span style="font-size:0.85em; color:#666;">${item.time_slot}</span>`;
             const userInfoStr = `<strong>${item.name}</strong> (${item.phone})<br><span style="font-size:0.85em; color:#666;">${item.email} / ${item.birthdate}</span>`;
 
             row.innerHTML = `
                 <td>${dateTimeStr}</td>
-                <!-- ⭐️ 예약번호 출력 -->
                 <td style="font-family: monospace; font-weight: bold; color: #0056b3;">${item.reservation_code || '-'}</td>
                 <td style="text-align:left;">${userInfoStr}</td>
                 <td style="text-align:left; font-size:0.9em; max-width:250px; word-break:keep-all;">${item.address || '-'}</td>
@@ -79,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // ⭐️ 다중 필터링 함수
+    // 다중 필터링 함수
     function applyFilters() {
         const keyword = searchInput.value.toLowerCase().trim();
         const loc = filterLocation.value;
@@ -87,11 +89,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const time = filterTime.value;
 
         const filteredData = allReservations.filter(item => {
-            // 1. ⭐️ 이름 / 연락처 / 예약번호 통합 검색
+            // 1. 이름 / 연락처 / 예약번호 통합 검색
             const matchKeyword = 
                 (item.name && item.name.toLowerCase().includes(keyword)) || 
                 (item.phone && item.phone.includes(keyword)) ||
-                (item.reservation_code && item.reservation_code.toLowerCase().includes(keyword)); // 예약번호 검색 추가
+                (item.reservation_code && item.reservation_code.toLowerCase().includes(keyword));
                 
             // 2. 장소 필터
             const matchLoc = loc === "" || item.location.includes(loc);
