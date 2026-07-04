@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // === ⭐️ 2026년 운영 정책 설정 ===
     const RULES = {
         "장소 1 (문원 체육공원)": {
-            start: "2026-07-05",
+            start: "2026-07-11",
             end: "2026-08-17",
             closedDays: [1], // 매주 월요일(1) 휴장
             exceptions: ["2026-08-17"], 
