@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // === ⭐️ 2026년 운영 정책 설정 (장소 순서 및 매핑 수정 완료) ===
+    // === ⭐️ 2026년 운영 정책 설정 ===
     const RULES = {
         "장소 1 (문원 체육공원)": {
             start: "2026-07-05",
@@ -85,6 +85,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === ⭐️ 주차별 예약 오픈 스케줄 반영 로직 ===
     function isSelectable(dateStr, rule) {
+        
+        // 🧪 [테스트 전용 코드] 한국 시간 기준 오늘과 내일 날짜는 무조건 활성화합니다.
+        const getKSTDateStr = (offsetDays) => {
+            const targetDate = new Date(Date.now() + offsetDays * 24 * 60 * 60 * 1000);
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Seoul',
+                year: 'numeric', month: '2-digit', day: '2-digit'
+            });
+            const parts = formatter.formatToParts(targetDate);
+            const kst = {};
+            parts.forEach(p => kst[p.type] = p.value);
+            return `${kst.year}-${kst.month}-${kst.day}`;
+        };
+        
+        // 만약 조회하는 날짜가 한국 표준시 기준 '오늘' 또는 '내일' 이라면 무조건 패스!
+        if (dateStr === getKSTDateStr(0) || dateStr === getKSTDateStr(1)) {
+            return true;
+        }
+
         const [y, m, d] = dateStr.split('-').map(Number);
         
         // 대상(예약하려는) 날짜 객체 생성
@@ -100,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetDate < start || targetDate > end) return false;
         if (!rule.exceptions?.includes(dateStr) && rule.closedDays.includes(targetDate.getDay())) return false;
 
-        // 2. 주차별 월요일 오전 10시 오픈 매핑 테이블 매칭 ⭐️
+        // 2. 주차별 월요일 오전 10시 오픈 매핑 테이블 매칭
         let openTimeISO = "";
         if (selectedLocation === "장소 1 (문원 체육공원)") {
             if (dateStr >= "2026-07-05" && dateStr <= "2026-07-19") openTimeISO = "2026-07-06T10:00:00";
@@ -147,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarBody.innerHTML = '';
         currentMonthDisplay.textContent = `${year}년 ${month}월`;
         
-        // 달력 하단 안내 문구 수정 ⭐️
         const stepDesc = document.querySelector('.calendar-table').nextElementSibling;
         if (stepDesc) {
             stepDesc.innerHTML = `원하시는 날짜를 선택하세요.<br><span style="color:#0056b3; font-weight:bold; font-size:0.9em;">(예약은 매주 월요일 오전 10시에 차례로 오픈됩니다)</span>`;
@@ -173,7 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         cell.addEventListener('click', () => handleDateClick(cell, dateStr));
                     } else {
                         cell.classList.add('disabled');
-                        // 툴팁(마우스 오버) 설명 문구 수정 ⭐️
                         cell.title = '아직 예약이 오픈되지 않았거나 예약 불가한 날짜(휴장일 등)입니다.\n(예약은 매주 월요일 오전 10시 오픈)';
                     }
                     date++;
