@@ -85,25 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === ⭐️ 주차별 예약 오픈 스케줄 반영 로직 ===
     function isSelectable(dateStr, rule) {
-        
-        // 🧪 [테스트 전용 코드] 한국 시간 기준 오늘과 내일 날짜는 무조건 활성화합니다.
-        const getKSTDateStr = (offsetDays) => {
-            const targetDate = new Date(Date.now() + offsetDays * 24 * 60 * 60 * 1000);
-            const formatter = new Intl.DateTimeFormat('en-US', {
-                timeZone: 'Asia/Seoul',
-                year: 'numeric', month: '2-digit', day: '2-digit'
-            });
-            const parts = formatter.formatToParts(targetDate);
-            const kst = {};
-            parts.forEach(p => kst[p.type] = p.value);
-            return `${kst.year}-${kst.month}-${kst.day}`;
-        };
-        
-        // 만약 조회하는 날짜가 한국 표준시 기준 '오늘' 또는 '내일' 이라면 무조건 패스!
-        if (dateStr === getKSTDateStr(0) || dateStr === getKSTDateStr(1)) {
-            return true;
-        }
-
         const [y, m, d] = dateStr.split('-').map(Number);
         
         // 대상(예약하려는) 날짜 객체 생성
@@ -305,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 address: address
             };
 
-        try {
+            try {
                 const response = await fetch(`${API_BASE}/api/reserve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -315,7 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json(); 
                 
                 if (response.ok && result.success) {
-                    // ⭐️ 팝업(alert) 대신 화면에 결과창 렌더링
                     const formContainer = reserveForm.parentElement;
                     formContainer.innerHTML = `
                         <div style="text-align: center; padding: 2rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #ddd; margin-top: 1rem;">
@@ -333,7 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button type="button" onclick="location.reload()" class="submit-btn" style="width: auto; padding: 10px 30px;">확인 (초기화)</button>
                         </div>
                     `;
-                    // 결과창으로 스크롤 부드럽게 이동
                     formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
                 } else {
