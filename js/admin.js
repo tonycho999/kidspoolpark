@@ -41,10 +41,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td style="text-align:left; font-size:0.9em; max-width:250px; word-break:keep-all;">${item.address || '-'}</td>
                 <td>${item.people}명</td>
                 <td>
-                    <select class="status-select" data-id="${item.id}">
-                        <option value="예약대기" ${currentStatus === '예약대기' ? 'selected' : ''}>예약대기</option>
-                        <option value="예약완료" ${currentStatus === '예약완료' ? 'selected' : ''}>예약완료</option>
-                        <option value="예약취소" ${currentStatus === '예약취소' ? 'selected' : ''}>예약취소</option>
+                    <select class="status-select" data-id="${item.id}" style="${getStatusStyle(currentStatus)}">
+                        <option value="예약대기" style="background:#fff; color:#333;" ${currentStatus === '예약대기' ? 'selected' : ''}>예약대기</option>
+                        <option value="예약완료" style="background:#fff; color:#333;" ${currentStatus === '예약완료' ? 'selected' : ''}>예약완료</option>
+                        <option value="예약취소" style="background:#fff; color:#333;" ${currentStatus === '예약취소' ? 'selected' : ''}>예약취소</option>
                     </select>
                 </td>
             `;
