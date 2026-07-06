@@ -117,7 +117,7 @@
                     
                     if (response.ok && result.success) {
                         const data = result.data;
-                        currentReservation = { code: data.reservation_code, phone: data.phone };
+                        currentReservation = { reservation_code: data.reservation_code, phone: data.phone };       
                         
                         document.getElementById('resLocation').textContent = data.location;
                         document.getElementById('resDate').textContent = data.date;
