@@ -123,6 +123,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-예약완료는 녹색바탕
-예약취소는 붉은색 바탕
-예약 대기는 그냥 흰색 바탕으로 수정해줘
