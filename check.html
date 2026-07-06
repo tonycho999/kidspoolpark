@@ -44,10 +44,9 @@
         <h2 style="text-align: center; margin-bottom: 2rem;">예약 조회 및 취소</h2>
         <br>
         <br>
-        <!-- 조회 폼 -->
         <form id="checkForm" class="check-form">
-            <label for="searchCode"><strong>예약 번호</strong></label>
-            <input type="text" id="searchCode" placeholder="예: A1B2C3D4" required style="text-transform: uppercase;">
+            <label for="searchDate"><strong>예약 날짜</strong></label>
+            <input type="date" id="searchDate" required>
             
             <label for="searchPhone"><strong>연락처</strong> (숫자와 하이픈 포함)</label>
             <input type="tel" id="searchPhone" placeholder="예: 010-1234-5678" required>
@@ -55,7 +54,6 @@
             <button type="submit" class="submit-btn" style="width:100%; padding:12px; margin-top:10px;">조회하기</button>
         </form>
 
-        <!-- 조회 결과 영역 -->
         <div id="resultBox" class="result-box">
             <h3>조회 결과</h3>
             <div class="result-item"><strong>장소:</strong> <span id="resLocation"></span></div>
@@ -71,7 +69,6 @@
     </main>
 
     <footer>
-        <!-- 기존 푸터 동일 -->
         <div class="company-name">케이앤와이 주식회사 (KNY Company)</div>
         <div class="footer-info">
             <span>대표 : 강경란</span> <span class="divider">|</span> 
@@ -99,7 +96,8 @@
             checkForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                const code = document.getElementById('searchCode').value.toUpperCase().trim();
+                // ⭐️ 예약 번호 대신 날짜를 가져옵니다.
+                const searchDate = document.getElementById('searchDate').value;
                 const phone = document.getElementById('searchPhone').value.trim();
                 
                 const submitBtn = checkForm.querySelector('.submit-btn');
@@ -110,13 +108,16 @@
                     const response = await fetch(`${API_BASE}/api/check-reservation`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ reservation_code: code, phone: phone })
+                        // ⭐️ API로 date 와 phone을 넘깁니다.
+                        body: JSON.stringify({ date: searchDate, phone: phone })
                     });
                     
                     const result = await response.json();
                     
                     if (response.ok && result.success) {
                         const data = result.data;
+                        
+                        // 취소 시 필요한 예약 번호는 API 결과값에서 가져와서 임시 저장합니다.
                         currentReservation = { reservation_code: data.reservation_code, phone: data.phone };       
                         
                         document.getElementById('resLocation').textContent = data.location;
