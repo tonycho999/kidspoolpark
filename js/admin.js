@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', async () => {
+
     const reservationList = document.getElementById('reservationList');
+    
+    // ⭐️ 요약 박스 엘리먼트 (인원수 표시용)
+    const totalBookedEl = document.getElementById('totalBookedCount');
+    const totalCanceledEl = document.getElementById('totalCanceledCount');
     
     // 필터 엘리먼트들
     const searchInput = document.getElementById('searchInput');
@@ -12,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let allReservations = []; 
 
-    // ⭐️ 상태에 따른 배경색/글자색 스타일 반환 함수
+    // 상태에 따른 배경색/글자색 스타일 반환 함수
     function getStatusStyle(status) {
         if (status === '예약완료') {
             return 'background-color: #28a745; color: white; border: none; padding: 6px; border-radius: 4px; font-weight: bold; cursor: pointer; outline: none;';
@@ -25,28 +30,41 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderTable(dataToRender) {
         reservationList.innerHTML = ''; 
+        
+        // ⭐️ 1. 인원 합산용 변수 초기화
+        let sumBooked = 0;
+        let sumCanceled = 0;
 
         if (dataToRender.length === 0) {
             reservationList.innerHTML = '<tr><td colspan="6">일치하는 예약 내역이 없습니다.</td></tr>';
+            // 데이터가 없으면 인원수도 0으로 업데이트
+            if(totalBookedEl) totalBookedEl.textContent = '0';
+            if(totalCanceledEl) totalCanceledEl.textContent = '0';
             return;
         }
 
         dataToRender.forEach(item => {
-            const row = document.createElement('tr');
             const currentStatus = item.status || '예약대기';
+            
+            // ⭐️ 2. 상태에 따라 인원수 더하기
+            const peopleCount = parseInt(item.people) || 0;
+            if (currentStatus === '예약취소') {
+                sumCanceled += peopleCount;
+            } else {
+                sumBooked += peopleCount;
+            }
 
-            // 뱃지 텍스트 및 색상 반전 수정 로직
+            const row = document.createElement('tr');
+            
+            // 뱃지 텍스트 및 색상 로직
             const isMunyhyeon = item.location.includes('장소 1');
             const locationColor = isMunyhyeon ? '#0056b3' : '#28a745'; 
             const locationText = isMunyhyeon ? '문현동' : '갈현동';     
 
             const locationBadge = `<span style="background:${locationColor}; color:white; padding:3px 6px; border-radius:3px; font-size:0.8em; margin-bottom:5px; display:inline-block; font-weight:bold;">${locationText}</span><br>`;
-
             const dateTimeStr = `${locationBadge}<strong>${item.date}</strong><br><span style="font-size:0.85em; color:#666;">${item.time_slot}</span>`;
             const userInfoStr = `<strong>${item.name}</strong> (${item.phone})<br><span style="font-size:0.85em; color:#666;">${item.email} / ${item.birthdate}</span>`;
 
-            // ⭐️ select 태그에 상태별 스타일 동적 적용
-            // option 태그에는 기본 흰색 배경을 줘서 드롭다운 메뉴 글자가 잘 보이도록 처리
             row.innerHTML = `
                 <td>${dateTimeStr}</td>
                 <td style="font-family: monospace; font-weight: bold; color: #0056b3;">${item.reservation_code || '-'}</td>
@@ -63,6 +81,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             reservationList.appendChild(row);
         });
+
+        // ⭐️ 3. 계산된 총 인원수를 요약 박스에 반영
+        if(totalBookedEl) totalBookedEl.textContent = sumBooked;
+        if(totalCanceledEl) totalCanceledEl.textContent = sumCanceled;
+
         attachSelectListeners();
     }
 
@@ -83,10 +106,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const itemToUpdate = allReservations.find(item => item.id == reservationId);
                         if (itemToUpdate) itemToUpdate.status = newStatus;
                         
-                        // ⭐️ DB 업데이트 성공 시, select 박스의 색상도 즉시 변경!
-                        e.target.style.cssText = getStatusStyle(newStatus);
+                        // ⭐️ 상태 변경 시 스타일만 바꾸는 게 아니라, 
+                        // 전체 표를 다시 그려서 상단의 총 인원수(요약)도 실시간으로 갱신되게 만듦!
+                        applyFilters(); 
                         
-                        alert('상태가 변경되었습니다.');
                     } else {
                         alert('상태 변경에 실패했습니다.');
                         location.reload(); 
@@ -122,6 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             return matchKeyword && matchLoc && matchDate && matchTime;
         });
+
         renderTable(filteredData);
     }
 
