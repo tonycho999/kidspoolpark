@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>예약 시스템</title>
+    <title>예약 시스템 - 과천 물놀이장</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         /* 메인 페이지 이미지 갤러리 스타일 */
@@ -13,36 +13,71 @@
             color: #555;
             text-align: center;
         }
-        /* 메인 큰 이미지 */
-        .main-image {
+
+        /* ⭐️ 갤러리 전체를 감싸는 래퍼 (정중앙 정렬) */
+        .gallery-wrapper {
             width: 100%;
-            max-height: 400px;
+            max-width: 1000px; /* 전체 가로 최대 폭 제한 */
+            margin: 0 auto;    /* 완벽한 중앙 정렬 */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;         /* 1열과 2열 사이의 간격 */
+            padding: 0 15px;   /* 모바일 화면 양끝 여백 */
+            box-sizing: border-box;
+        }
+
+        /* ⭐️ 첫 번째 줄 (이미지 2장) */
+        .top-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+
+        .top-row img {
+            width: 100%;
+            height: 350px; /* 1열 이미지 높이 */
             object-fit: cover;
             border-radius: 8px;
-            margin-bottom: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
         }
-        /* 서브 이미지 그리드 */
-        .gallery {
+
+        /* ⭐️ 두 번째 줄 (이미지 3장) */
+        .bottom-row {
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 3칸으로 고정 */
+            grid-template-columns: repeat(3, 1fr); 
             gap: 15px;
-        }
-        .gallery img {
             width: 100%;
-            height: 200px;
+        }
+
+        .bottom-row img {
+            width: 100%;
+            height: 250px; /* 2열 이미지 높이 */
             object-fit: cover;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
-        .gallery img:hover {
-            transform: scale(1.03);
+
+        /* 이미지 호버 효과 공통 */
+        .gallery-wrapper img:hover {
+            transform: scale(1.02);
+            z-index: 1; /* 커질 때 주변 이미지를 덮도록 설정 */
         }
-        /* 모바일에서는 2칸으로 */
+
+        /* ⭐️ 모바일 반응형 대응 */
         @media (max-width: 768px) {
-            .gallery {
-                grid-template-columns: repeat(2, 1fr);
+            .top-row, .bottom-row {
+                grid-template-columns: repeat(2, 1fr); /* 모바일에서는 모두 2열로 통일 */
+            }
+            .top-row img, .bottom-row img {
+                height: 200px;
+            }
+            /* 5장째(마지막 장)는 홀수이므로 한 줄을 꽉 채우게 처리 */
+            .bottom-row img:last-child {
+                grid-column: span 2; 
+                height: 250px;
             }
         }
     </style>
@@ -66,17 +101,22 @@
         <h1 style="text-align: center;">환영합니다!</h1>
         <p class="intro-text">과천시 야외 물놀이장의 생생한 현장 모습을 확인하시고, 상단 메뉴를 통해 예약을 진행해 주세요.</p>
         
-        <!-- ⭐️ 첫 번째 사진을 메인으로 크게 배치 -->
-        <img src="public/images/과천 문원 체육공원 물놀이터 전경.png" alt="물놀이터 전경" class="main-image">
-        
-        <!-- ⭐️ 나머지 6장의 사진을 3열 그리드로 꽉 차게 배치 -->
-        <div class="gallery">
-            <img src="public/images/과천 문원체육공원 물놀이터.png" alt="물놀이터 시설 1">
-            <img src="public/images/과천 문원 물놀이터.png" alt="물놀이터 시설 2">
-            <img src="public/images/과천 문원 체육공원 물놀이터 사진.png" alt="물놀이터 시설 3">
-            <img src="public/images/과천 문원체육공원 바닥분수.png" alt="바닥분수">
-            <img src="public/images/과천 문원 물놀이터 남녀 탈의실.png" alt="남녀 탈의실">
-            <img src="public/images/과천 문원 체육공원 물놀이터 주차장.png" alt="주차장">
+        <!-- ⭐️ 1열(2장), 2열(3장) 갤러리 영역 -->
+        <div class="gallery-wrapper">
+            
+            <!-- 1열: 큰 이미지 2장 -->
+            <div class="top-row">
+                <img src="public/images/1000019829.png" alt="물놀이터 시설 1">
+                <img src="public/images/1000019830.png" alt="물놀이터 시설 2">
+            </div>
+            
+            <!-- 2열: 작은 이미지 3장 -->
+            <div class="bottom-row">
+                <img src="public/images/1000019831.png" alt="물놀이터 시설 1">
+                <img src="public/images/1000019832.png" alt="물놀이터 시설 2">
+                <img src="public/images/1000019833.png" alt="물놀이터 시설 3">
+            </div>
+
         </div>
     </main>
 
