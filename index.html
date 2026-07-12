@@ -21,7 +21,7 @@
             margin: 0 auto;    /* 완벽한 중앙 정렬 */
             display: flex;
             flex-direction: column;
-            gap: 15px;         /* 1열과 2열 사이의 간격 */
+            gap: 15px;         /* 각 열 사이의 간격 */
             padding: 0 15px;   /* 모바일 화면 양끝 여백 */
             box-sizing: border-box;
         }
@@ -43,7 +43,7 @@
             transition: transform 0.3s ease;
         }
 
-        /* ⭐️ 두 번째 줄 (이미지 3장) */
+        /* ⭐️ 두 번째, 세 번째 줄 (이미지 3장씩) */
         .bottom-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr); 
@@ -53,7 +53,7 @@
 
         .bottom-row img {
             width: 100%;
-            height: 250px; /* 2열 이미지 높이 */
+            height: 250px; /* 2, 3열 이미지 높이 */
             object-fit: cover;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -74,7 +74,7 @@
             .top-row img, .bottom-row img {
                 height: 200px;
             }
-            /* 5장째(마지막 장)는 홀수이므로 한 줄을 꽉 채우게 처리 */
+            /* 홀수 장수일 때 마지막 이미지를 화면 가로로 꽉 차게 (선택사항) */
             .bottom-row img:last-child {
                 grid-column: span 2; 
                 height: 250px;
@@ -101,20 +101,26 @@
         <h1 style="text-align: center;">환영합니다!</h1>
         <p class="intro-text">과천시 야외 물놀이장의 생생한 현장 모습을 확인하시고, 상단 메뉴를 통해 예약을 진행해 주세요.</p>
         
-        <!-- ⭐️ 1열(2장), 2열(3장) 갤러리 영역 -->
         <div class="gallery-wrapper">
             
             <!-- 1열: 큰 이미지 2장 -->
             <div class="top-row">
-                <img src="public/images/1000019829.png" alt="물놀이터 시설 1">
-                <img src="public/images/1000019830.png" alt="물놀이터 시설 2">
+                <img src="public/images/1000019872.png" alt="물놀이터 전경 1">
+                <img src="public/images/1000019829.png" alt="물놀이터 전경 2">
             </div>
             
             <!-- 2열: 작은 이미지 3장 -->
             <div class="bottom-row">
-                <img src="public/images/1000019878.png" alt="물놀이터 시설 1">
+                <img src="public/images/1000019830.png" alt="물놀이터 시설 1">
                 <img src="public/images/1000019832.png" alt="물놀이터 시설 2">
                 <img src="public/images/1000019833.png" alt="물놀이터 시설 3">
+            </div>
+
+            <!-- 3열: 작은 이미지 3장 추가 -->
+            <div class="bottom-row">
+                <img src="public/images/1000019874.png" alt="물놀이터 시설 4">
+                <img src="public/images/1000019876.png" alt="물놀이터 시설 5">
+                <img src="public/images/1000019878.png" alt="물놀이터 시설 6">
             </div>
 
         </div>
