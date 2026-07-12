@@ -151,16 +151,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ⭐️ 데이터를 정렬하는 핵심 함수
+    // ⭐️ 데이터를 정렬하는 핵심 함수 (가까운 날짜순, 빠른 회차순)
     function sortReservations(dataArray) {
         return dataArray.sort((a, b) => {
-            // 1순위: 날짜 기준 내림차순 (가장 최신 날짜가 위로)
+            // 1순위: 날짜 기준 오름차순 (오늘과 가까운 빠른 날짜가 맨 위로!)
             if (a.date !== b.date) {
-                return new Date(b.date) - new Date(a.date);
+                // a.date - b.date 순서로 빼면 과거(가까운) 날짜가 먼저 나옵니다.
+                return new Date(a.date) - new Date(b.date); 
             }
+            
             // 2순위: 날짜가 같으면 회차 빠른 순서대로 (오름차순)
-            return a.time_slot.localeCompare(b.time_slot);
+            // 회차 문자열(예: "3회차 (14:00~14:50)")에서 숫자만 추출하여 비교
+            const matchA = a.time_slot.match(/\d+/);
+            const matchB = b.time_slot.match(/\d+/);
+            
+            const numA = matchA ? parseInt(matchA[0], 10) : 0;
+            const numB = matchB ? parseInt(matchB[0], 10) : 0;
+            
+            return numA - numB; 
         });
     }
+
 
     function applyFilters() {
         const keyword = searchInput.value.toLowerCase().trim();
