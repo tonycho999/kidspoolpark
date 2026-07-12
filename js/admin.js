@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const GET_URL = 'https://reservation-api.tonycho999.workers.dev/api/reservations';
     const UPDATE_URL = 'https://reservation-api.tonycho999.workers.dev/api/update-status';
-    const DELETE_URL = 'https://reservation-api.tonycho999.workers.dev/api/delete-reservation'; // ⭐️ 추가됨
+    const DELETE_URL = 'https://reservation-api.tonycho999.workers.dev/api/delete-reservation';
 
     let allReservations = []; 
 
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <option value="예약완료" style="background:#fff; color:#333;" ${currentStatus === '예약완료' ? 'selected' : ''}>예약완료</option>
                         <option value="예약취소" style="background:#fff; color:#333;" ${currentStatus === '예약취소' ? 'selected' : ''}>예약취소</option>
                     </select>
-                    <!-- ⭐️ 삭제 버튼 추가 -->
+                    <!-- 삭제 버튼 -->
                     <button class="btn-delete" data-id="${item.id}">X 삭제</button>
                 </td>
             `;
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(totalCanceledEl) totalCanceledEl.textContent = sumCanceled;
 
         attachSelectListeners();
-        attachDeleteListeners(); // ⭐️ 삭제 이벤트 리스너 등록
+        attachDeleteListeners();
     }
 
     function attachSelectListeners() {
@@ -117,7 +117,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // ⭐️ 삭제 버튼 동작 로직
     function attachDeleteListeners() {
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -135,10 +134,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                     
                     if (deleteRes.ok) {
-                        alert('예약이 완전히 삭제되었습니다.');
-                        // 성공하면 배열에서 해당 데이터를 빼고 화면 다시 그리기
+                        // 성공 시 전체 배열에서 명확하게 제거
                         allReservations = allReservations.filter(item => item.id != reservationId);
                         applyFilters(); 
+                        alert('예약이 완전히 삭제되었습니다.');
                     } else {
                         alert('삭제에 실패했습니다.');
                         location.reload(); 
@@ -151,13 +150,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // ⭐️ 데이터를 정렬하는 핵심 함수
+    function sortReservations(dataArray) {
+        return dataArray.sort((a, b) => {
+            // 1순위: 날짜 기준 내림차순 (가장 최신 날짜가 위로)
+            if (a.date !== b.date) {
+                return new Date(b.date) - new Date(a.date);
+            }
+            // 2순위: 날짜가 같으면 회차 빠른 순서대로 (오름차순)
+            return a.time_slot.localeCompare(b.time_slot);
+        });
+    }
+
     function applyFilters() {
         const keyword = searchInput.value.toLowerCase().trim();
         const loc = filterLocation.value;
         const date = filterDate.value;
         const time = filterTime.value;
 
-        const filteredData = allReservations.filter(item => {
+        let filteredData = allReservations.filter(item => {
             const matchKeyword = 
                 (item.name && item.name.toLowerCase().includes(keyword)) || 
                 (item.phone && item.phone.includes(keyword)) ||
@@ -170,14 +181,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             return matchKeyword && matchLoc && matchDate && matchTime;
         });
 
-        // ⭐️ 정렬 로직: 필터링된 후 가장 최신 날짜순(내림차순) -> 이른 회차순(오름차순) 정렬
-        filteredData.sort((a, b) => {
-            if (a.date !== b.date) {
-                return new Date(b.date) - new Date(a.date); // 날짜 최근 순
-            }
-            return a.time_slot.localeCompare(b.time_slot); // 회차 빠른 순
-        });
-
+        // ⭐️ 필터링된 데이터를 다시 한번 강력하게 정렬
+        filteredData = sortReservations(filteredData);
+        
         renderTable(filteredData);
     }
 
@@ -185,11 +191,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(el) el.addEventListener('input', applyFilters);
     });
 
+    // ⭐️ 초기 데이터 로드 시 완벽 정렬 보장
     try {
         const response = await fetch(GET_URL);
         const data = await response.json();
-        allReservations = data;
-        applyFilters(); // ⭐️ 초기 로드 시에도 정렬이 적용되도록 수정
+        
+        // 서버에서 받아온 원본 데이터를 즉시 최신 날짜순으로 1차 정렬
+        allReservations = sortReservations(data);
+        
+        // 정렬된 데이터를 바탕으로 필터 적용 및 화면 그리기
+        applyFilters(); 
     } catch (error) {
         reservationList.innerHTML = '<tr><td colspan="6">데이터를 불러오는 데 실패했습니다.</td></tr>';
     }
