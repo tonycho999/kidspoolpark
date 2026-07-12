@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const peopleInput = document.getElementById('people');
     if(btnMinus && btnPlus) {
         btnMinus.addEventListener('click', () => { let val = parseInt(peopleInput.value); if (val > 1) peopleInput.value = val - 1; });
-        btnPlus.addEventListener('click', () => { let val = parseInt(peopleInput.value); if (val < 5) peopleInput.value = val + 1; });
+        btnPlus.addEventListener('click', () => { let val = parseInt(peopleInput.value); if (val < 4) peopleInput.value = val + 1; });
     }
 
     const reserveForm = document.getElementById('reserveForm');
