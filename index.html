@@ -105,7 +105,8 @@
             color: white;
             text-align: center;
             padding: 15px;
-            font-size: 1.3rem;
+            /* ⭐️ 모바일에서만 1.2rem으로 축소 */
+            font-size: 1.2rem; 
             font-weight: bold;
         }
 
@@ -151,12 +152,10 @@
         .popup-footer {
             background-color: #f8f9fa;
             display: flex;
-            justify-content: space-between;
             border-top: 1px solid #ddd;
         }
 
         .popup-btn {
-            flex: 1;
             padding: 15px;
             border: none;
             background: none;
@@ -167,8 +166,14 @@
             transition: background-color 0.2s;
         }
         
-        .popup-btn:first-child {
+        /* ⭐️ 버튼 영역 7:3 비율 설정 */
+        .btn-today {
+            flex: 7; 
             border-right: 1px solid #ddd;
+        }
+        
+        .btn-close {
+            flex: 3; 
         }
 
         .popup-btn:hover { background-color: #e2e2e2; }
@@ -181,7 +186,8 @@
             }
             .popup-header {
                 padding: 20px;
-                font-size: 1.7rem; /* 글자 크기 확대 */
+                /* ⭐️ PC에서는 원래 원하시던 큰 글씨(1.7rem)로 유지! */
+                font-size: 1.7rem; 
             }
             .popup-body {
                 padding: 40px 30px;
@@ -270,10 +276,10 @@
             <p style="margin-top: 15px; color: #555; font-weight: normal;">가족과 함께 시원하고 즐거운 추억을 만들어 보세요!</p>
             <p class="popup-desc">※ 원활한 행사 진행을 위해 오전 9시 30분까지 입장해주세요.</p>
         </div>
-        <!-- ⭐️ 팝업 버튼 (다시보지않기 삭제) -->
+        <!-- ⭐️ 팝업 버튼 (7:3 비율 클래스 적용) -->
         <div class="popup-footer">
-            <button class="popup-btn" onclick="closePopup('today')">오늘 하루 보지않기</button>
-            <button class="popup-btn" onclick="closePopup('close')">닫기</button>
+            <button class="popup-btn btn-today" onclick="closePopup('today')">오늘 하루 보지않기</button>
+            <button class="popup-btn btn-close" onclick="closePopup('close')">닫기</button>
         </div>
     </div>
 
@@ -314,7 +320,7 @@
                 overlay.style.display = 'block';
             }
 
-            // ⭐️ 다시보지않기 옵션 삭제 완료
+            // ⭐️ 닫기 및 오늘 하루 보지않기 제어 함수
             window.closePopup = function(type) {
                 popup.style.display = 'none';
                 overlay.style.display = 'none';
