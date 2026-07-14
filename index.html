@@ -75,29 +75,28 @@
             }
         }
 
-        /* ⭐️ 이벤트 팝업 스타일 추가 */
+        /* ⭐️ 이벤트 팝업 스타일 (모바일 기본) */
         #eventPopup {
-            display: none; /* 기본 숨김 (JS에서 조건 맞으면 띄움) */
+            display: none; 
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 90%;
-            max-width: 400px;
+            max-width: 400px; /* 모바일용 최대 가로 사이즈 */
             background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-radius: 16px; /* 둥글게 */
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
             z-index: 9999;
             overflow: hidden;
-            border: 3px solid #0056b3;
+            border: 4px solid #0056b3;
         }
         
-        /* 팝업 배경 어둡게 */
         #popupOverlay {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             z-index: 9998;
         }
 
@@ -106,27 +105,28 @@
             color: white;
             text-align: center;
             padding: 15px;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: bold;
         }
 
         .popup-body {
-            padding: 20px;
+            padding: 25px 20px;
             text-align: center;
-            line-height: 1.6;
+            line-height: 1.7;
         }
 
         .popup-body h3 {
             color: #d9534f;
             margin-top: 0;
             margin-bottom: 10px;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
         }
 
         .popup-body p {
             margin: 10px 0;
             color: #333;
             font-weight: bold;
+            font-size: 1.05rem;
         }
 
         .popup-body ul {
@@ -135,13 +135,21 @@
             margin: 15px 0;
             color: #0056b3;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
         }
 
-        .popup-body ul li { margin-bottom: 5px; }
+        .popup-body ul li { margin-bottom: 8px; }
+
+        /* 하단 빨간색 경고문구 */
+        .popup-desc {
+            font-size: 0.95rem; 
+            color: #d9534f; 
+            margin-top: 15px !important;
+            font-weight: bold;
+        }
 
         .popup-footer {
-            background-color: #f1f1f1;
+            background-color: #f8f9fa;
             display: flex;
             justify-content: space-between;
             border-top: 1px solid #ddd;
@@ -149,13 +157,14 @@
 
         .popup-btn {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             border: none;
             background: none;
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             cursor: pointer;
             font-weight: bold;
             color: #555;
+            transition: background-color 0.2s;
         }
         
         .popup-btn:first-child {
@@ -163,6 +172,42 @@
         }
 
         .popup-btn:hover { background-color: #e2e2e2; }
+
+        /* ⭐️ PC 화면용 팝업 확대 스타일 (화면이 768px 이상일 때 적용) */
+        @media (min-width: 769px) {
+            #eventPopup {
+                max-width: 600px; /* PC에서는 1.5배 확대 */
+                border-radius: 20px;
+            }
+            .popup-header {
+                padding: 20px;
+                font-size: 1.7rem; /* 글자 크기 확대 */
+            }
+            .popup-body {
+                padding: 40px 30px;
+            }
+            .popup-body h3 {
+                font-size: 1.5rem;
+            }
+            .popup-body p {
+                font-size: 1.3rem;
+            }
+            .popup-body ul {
+                font-size: 1.4rem;
+                margin: 25px 0;
+            }
+            .popup-body ul li {
+                margin-bottom: 12px;
+            }
+            .popup-desc {
+                font-size: 1.1rem;
+                margin-top: 25px !important;
+            }
+            .popup-btn {
+                padding: 20px;
+                font-size: 1.2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -223,11 +268,11 @@
                 <li>🎈 타투스티커</li>
             </ul>
             <p style="margin-top: 15px; color: #555; font-weight: normal;">가족과 함께 시원하고 즐거운 추억을 만들어 보세요!</p>
-            <p style="font-size: 0.85rem; color: #d9534f; margin-top: 10px;">※ 원활한 행사 진행을 위해 오전 9시 30분까지 입장해주세요.</p>
+            <p class="popup-desc">※ 원활한 행사 진행을 위해 오전 9시 30분까지 입장해주세요.</p>
         </div>
+        <!-- ⭐️ 팝업 버튼 (다시보지않기 삭제) -->
         <div class="popup-footer">
             <button class="popup-btn" onclick="closePopup('today')">오늘 하루 보지않기</button>
-            <button class="popup-btn" onclick="closePopup('always')">다시 보지않기</button>
             <button class="popup-btn" onclick="closePopup('close')">닫기</button>
         </div>
     </div>
@@ -257,7 +302,6 @@
             const popupDeadline = new Date('2026-07-25T10:00:00');
             const now = new Date();
 
-            // 2. 쿠키 확인 함수
             function getCookie(name) {
                 let matches = document.cookie.match(new RegExp(
                     "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -265,29 +309,20 @@
                 return matches ? decodeURIComponent(matches[1]) : undefined;
             }
 
-            // 3. 팝업 띄우기 조건 검사
-            // - 마감 시간이 지나지 않았고
-            // - 'hideEventPopup' 쿠키가 없는 경우에만 팝업 노출
             if (now < popupDeadline && !getCookie('hideEventPopup')) {
                 popup.style.display = 'block';
                 overlay.style.display = 'block';
             }
 
-            // 4. 팝업 닫기 및 쿠키 설정 함수 (전역 함수로 등록)
+            // ⭐️ 다시보지않기 옵션 삭제 완료
             window.closePopup = function(type) {
                 popup.style.display = 'none';
                 overlay.style.display = 'none';
 
                 if (type === 'today') {
-                    // 오늘 하루 보지않기: 자정(24:00)까지 유지되는 쿠키 생성
                     let tomorrow = new Date();
                     tomorrow.setHours(23, 59, 59, 999);
                     document.cookie = "hideEventPopup=true; expires=" + tomorrow.toUTCString() + "; path=/";
-                } else if (type === 'always') {
-                    // 다시 보지않기: 100일간 유지되는 쿠키 생성
-                    let farFuture = new Date();
-                    farFuture.setDate(farFuture.getDate() + 100);
-                    document.cookie = "hideEventPopup=true; expires=" + farFuture.toUTCString() + "; path=/";
                 }
             };
         });
