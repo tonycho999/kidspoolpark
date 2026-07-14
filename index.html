@@ -14,19 +14,17 @@
             text-align: center;
         }
 
-        /* ⭐️ 갤러리 전체를 감싸는 래퍼 (정중앙 정렬) */
         .gallery-wrapper {
             width: 100%;
-            max-width: 1000px; /* 전체 가로 최대 폭 제한 */
-            margin: 0 auto;    /* 완벽한 중앙 정렬 */
+            max-width: 1000px; 
+            margin: 0 auto;    
             display: flex;
             flex-direction: column;
-            gap: 15px;         /* 각 열 사이의 간격 */
-            padding: 0 15px;   /* 모바일 화면 양끝 여백 */
+            gap: 15px;         
+            padding: 0 15px;   
             box-sizing: border-box;
         }
 
-        /* ⭐️ 첫 번째 줄 (이미지 2장) */
         .top-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -36,14 +34,13 @@
 
         .top-row img {
             width: 100%;
-            height: 350px; /* 1열 이미지 높이 */
+            height: 350px; 
             object-fit: cover;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
 
-        /* ⭐️ 두 번째, 세 번째 줄 (이미지 3장씩) */
         .bottom-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr); 
@@ -53,33 +50,119 @@
 
         .bottom-row img {
             width: 100%;
-            height: 250px; /* 2, 3열 이미지 높이 */
+            height: 250px; 
             object-fit: cover;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
 
-        /* 이미지 호버 효과 공통 */
         .gallery-wrapper img:hover {
             transform: scale(1.02);
-            z-index: 1; /* 커질 때 주변 이미지를 덮도록 설정 */
+            z-index: 1; 
         }
 
-        /* ⭐️ 모바일 반응형 대응 */
         @media (max-width: 768px) {
             .top-row, .bottom-row {
-                grid-template-columns: repeat(2, 1fr); /* 모바일에서는 모두 2열로 통일 */
+                grid-template-columns: repeat(2, 1fr); 
             }
             .top-row img, .bottom-row img {
                 height: 200px;
             }
-            /* 홀수 장수일 때 마지막 이미지를 화면 가로로 꽉 차게 (선택사항) */
             .bottom-row img:last-child {
                 grid-column: span 2; 
                 height: 250px;
             }
         }
+
+        /* ⭐️ 이벤트 팝업 스타일 추가 */
+        #eventPopup {
+            display: none; /* 기본 숨김 (JS에서 조건 맞으면 띄움) */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 9999;
+            overflow: hidden;
+            border: 3px solid #0056b3;
+        }
+        
+        /* 팝업 배경 어둡게 */
+        #popupOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9998;
+        }
+
+        .popup-header {
+            background-color: #0056b3;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .popup-body {
+            padding: 20px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .popup-body h3 {
+            color: #d9534f;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .popup-body p {
+            margin: 10px 0;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .popup-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+            color: #0056b3;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .popup-body ul li { margin-bottom: 5px; }
+
+        .popup-footer {
+            background-color: #f1f1f1;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #ddd;
+        }
+
+        .popup-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .popup-btn:first-child {
+            border-right: 1px solid #ddd;
+        }
+
+        .popup-btn:hover { background-color: #e2e2e2; }
     </style>
 </head>
 <body>
@@ -102,7 +185,6 @@
         <p class="intro-text">과천시 야외 물놀이장의 생생한 현장 모습을 확인하시고, 상단 메뉴를 통해 예약을 진행해 주세요.</p>
         
         <div class="gallery-wrapper">
-            
             <!-- 1열: 큰 이미지 2장 -->
             <div class="top-row">
                 <img src="public/images/1000019872.png" alt="물놀이터 전경 1">
@@ -122,9 +204,33 @@
                 <img src="public/images/1000019876.png" alt="물놀이터 시설 5">
                 <img src="public/images/1000019878.png" alt="물놀이터 시설 6">
             </div>
-
         </div>
     </main>
+
+    <!-- ⭐️ 이벤트 팝업창 HTML 구조 -->
+    <div id="popupOverlay"></div>
+    <div id="eventPopup">
+        <div class="popup-header">
+            🎉 갈현동 야외물놀이장 개장! 💦
+        </div>
+        <div class="popup-body">
+            <h3>7월 25일(토) 오전 9시 30분부터</h3>
+            <p>다양한 무료 이벤트가 기다립니다!</p>
+            <ul>
+                <li>🎈 버블 & 마술쇼</li>
+                <li>🎈 키다리삐에로 풍선아트</li>
+                <li>🎈 페이스페인팅</li>
+                <li>🎈 타투스티커</li>
+            </ul>
+            <p style="margin-top: 15px; color: #555; font-weight: normal;">가족과 함께 시원하고 즐거운 추억을 만들어 보세요!</p>
+            <p style="font-size: 0.85rem; color: #d9534f; margin-top: 10px;">※ 원활한 행사 진행을 위해 오전 9시 30분까지 입장해주세요.</p>
+        </div>
+        <div class="popup-footer">
+            <button class="popup-btn" onclick="closePopup('today')">오늘 하루 보지않기</button>
+            <button class="popup-btn" onclick="closePopup('always')">다시 보지않기</button>
+            <button class="popup-btn" onclick="closePopup('close')">닫기</button>
+        </div>
+    </div>
 
     <footer>
         <div class="company-name">케이앤와이 주식회사 (KNY Company)</div>
@@ -140,5 +246,51 @@
     </footer>
 
     <script src="js/main.js"></script>
+
+    <!-- ⭐️ 팝업 제어 자바스크립트 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const popup = document.getElementById('eventPopup');
+            const overlay = document.getElementById('popupOverlay');
+            
+            // 1. 팝업 노출 마감 시간 설정 (2026년 7월 25일 오전 10시)
+            const popupDeadline = new Date('2026-07-25T10:00:00');
+            const now = new Date();
+
+            // 2. 쿠키 확인 함수
+            function getCookie(name) {
+                let matches = document.cookie.match(new RegExp(
+                    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+                ));
+                return matches ? decodeURIComponent(matches[1]) : undefined;
+            }
+
+            // 3. 팝업 띄우기 조건 검사
+            // - 마감 시간이 지나지 않았고
+            // - 'hideEventPopup' 쿠키가 없는 경우에만 팝업 노출
+            if (now < popupDeadline && !getCookie('hideEventPopup')) {
+                popup.style.display = 'block';
+                overlay.style.display = 'block';
+            }
+
+            // 4. 팝업 닫기 및 쿠키 설정 함수 (전역 함수로 등록)
+            window.closePopup = function(type) {
+                popup.style.display = 'none';
+                overlay.style.display = 'none';
+
+                if (type === 'today') {
+                    // 오늘 하루 보지않기: 자정(24:00)까지 유지되는 쿠키 생성
+                    let tomorrow = new Date();
+                    tomorrow.setHours(23, 59, 59, 999);
+                    document.cookie = "hideEventPopup=true; expires=" + tomorrow.toUTCString() + "; path=/";
+                } else if (type === 'always') {
+                    // 다시 보지않기: 100일간 유지되는 쿠키 생성
+                    let farFuture = new Date();
+                    farFuture.setDate(farFuture.getDate() + 100);
+                    document.cookie = "hideEventPopup=true; expires=" + farFuture.toUTCString() + "; path=/";
+                }
+            };
+        });
+    </script>
 </body>
 </html>
