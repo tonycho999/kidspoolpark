@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "장소 1 (문원 체육공원)": {
             start: "2026-07-11",
             end: "2026-08-17",
-            closedDays: [1], // 매주 월요일(1) 휴장
+            closedDays: [1], 
             exceptions: ["2026-08-17"], 
             capacity: 60,    
             slots: [
@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
         "장소 2 (갈현동)": {
             start: "2026-07-25",
             end: "2026-08-17",
-            closedDays: [2], // 매주 화요일(2) 휴장
-            capacity: 130,   // 정원 130명 동일하게 적용
+            closedDays: [2], 
+            capacity: 130,   
             slots: [
                 "1회차 (10:00~11:00)", "2회차 (11:30~12:30)", 
                 "3회차 (13:00~14:00)", "4회차 (14:30~15:30)", "5회차 (16:00~17:00)"
@@ -40,7 +40,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedDateDisplay = document.getElementById('selectedDateDisplay');
     const hiddenDateInput = document.getElementById('date');
 
-    // 기본 시간표 비활성화 렌더링
+    // === ⭐️ 팝업 제어 로직 (오늘 하루 보지 않기) ===
+    function setHideToday() {
+        const expiry = new Date();
+        expiry.setHours(23, 59, 59, 999); // 오늘 자정까지
+        localStorage.setItem('hideSurvivalPopup', expiry.getTime());
+    }
+
+    function shouldShowPopup() {
+        const hideUntil = localStorage.getItem('hideSurvivalPopup');
+        if (!hideUntil) return true; // 쿠키 없으면 무조건 보여줌
+        if (new Date().getTime() > parseInt(hideUntil)) {
+            localStorage.removeItem('hideSurvivalPopup'); // 시간 지났으면 삭제하고 보여줌
+            return true;
+        }
+        return false; // 아직 자정 안지났으면 숨김
+    }
+
+    const survivalPopup = document.getElementById('survivalPopup');
+    document.getElementById('btnClosePopup')?.addEventListener('click', () => {
+        survivalPopup.style.display = 'none';
+    });
+    document.getElementById('btnHideToday')?.addEventListener('click', () => {
+        setHideToday();
+        survivalPopup.style.display = 'none';
+    });
+
+    // 기본 시간표 렌더링
     function renderDefaultTimeSlots(locationName) {
         const rule = RULES[locationName];
         if (!rule) return;
@@ -61,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 장소 탭 변경 이벤트
     const locationRadios = document.querySelectorAll('input[name="locationSelect"]');
-    const survivalNotice = document.getElementById('survivalNotice'); // ⭐️ 배너 요소 가져오기
 
     locationRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -76,9 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             selectedLocation = e.target.value;
 
-            // ⭐️ [추가] 갈현동 선택 시 생존수영 안내 배너 표시
-            if (survivalNotice) {
-                survivalNotice.style.display = (selectedLocation === "장소 2 (갈현동)") ? "block" : "none";
+            // ⭐️ 갈현동 선택 시 팝업 띄우기 (조건 충족 시에만)
+            if (selectedLocation === "장소 2 (갈현동)" && shouldShowPopup()) {
+                if (survivalPopup) survivalPopup.style.display = 'flex';
             }
             
             hiddenDateInput.value = ''; 
@@ -89,24 +114,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // === ⭐️ 주차별 예약 오픈 스케줄 반영 로직 ===
+    // 예약 가능 여부 체크 로직
     function isSelectable(dateStr, rule) {
         const [y, m, d] = dateStr.split('-').map(Number);
-        
-        // 대상(예약하려는) 날짜 객체 생성
         const targetDate = new Date(y, m - 1, d, 0, 0, 0);
         
-        // 운영 기간 설정
         const start = new Date(rule.start);
         const end = new Date(rule.end);
         start.setHours(0, 0, 0, 0);
         end.setHours(0, 0, 0, 0);
         
-        // 1. 기본 운영기간 및 휴장일 체크
         if (targetDate < start || targetDate > end) return false;
         if (!rule.exceptions?.includes(dateStr) && rule.closedDays.includes(targetDate.getDay())) return false;
 
-        // 2. 주차별 월요일 오전 10시 오픈 매핑 테이블 매칭
         let openTimeISO = "";
         if (selectedLocation === "장소 1 (문원 체육공원)") {
             if (dateStr >= "2026-07-05" && dateStr <= "2026-07-19") openTimeISO = "2026-07-06T10:00:00";
@@ -115,12 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
             else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
         } else if (selectedLocation === "장소 2 (갈현동)") {
-            // ⭐️ [추가] 생존수영 예약 오픈 시간 예외 처리 ⭐️
-            if (dateStr === "2026-08-01") {
-                openTimeISO = "2026-07-27T10:00:00"; // 8/1 예약은 7/27 10시 오픈
-            } else if (dateStr === "2026-08-15") {
-                openTimeISO = "2026-08-10T10:00:00"; // 8/15 예약은 8/10 10시 오픈
-            } else {
+            if (dateStr === "2026-08-01") openTimeISO = "2026-07-27T10:00:00"; 
+            else if (dateStr === "2026-08-15") openTimeISO = "2026-08-10T10:00:00";
+            else {
                 if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
                 else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
                 else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
@@ -128,13 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 범위에 속하지 않는 예외 날짜 예약 차단
         if (!openTimeISO) return false;
         const [oy, om, od] = openTimeISO.split('T')[0].split('-').map(Number);
         const [oh, omin, os] = openTimeISO.split('T')[1].split(':').map(Number);
         const openTime = new Date(oy, om - 1, od, oh, omin, os);
 
-        // 3. 현재 한국 시간(KST) 구하기
         const formatter = new Intl.DateTimeFormat('en-US', {
             timeZone: 'Asia/Seoul',
             year: 'numeric', month: '2-digit', day: '2-digit',
@@ -145,10 +160,8 @@ document.addEventListener('DOMContentLoaded', () => {
         parts.forEach(p => kst[p.type] = p.value);
         const currentKst = new Date(kst.year, kst.month - 1, kst.day, kst.hour, kst.minute, kst.second);
         
-        // 4. 아직 지정된 오픈 시간 전이라면 예약 불가
         if (currentKst < openTime) return false;
 
-        // 5. 이미 지나간 과거 날짜 예약 불가
         const currentOnlyDate = new Date(kst.year, kst.month - 1, kst.day, 0, 0, 0);
         if (currentOnlyDate > targetDate) return false;
 
@@ -195,7 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 달력 좌우 이동
     document.getElementById('prevMonth').addEventListener('click', () => {
         if (currentMonth === 1) { currentMonth = 12; currentYear--; } else { currentMonth--; }
         renderCalendar(currentYear, currentMonth);
@@ -205,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCalendar(currentYear, currentMonth);
     });
 
-    // === 잔여인원 로드 ===
     async function handleDateClick(cell, dateStr) {
         document.querySelectorAll('#calendarBody td').forEach(td => td.classList.remove('selected'));
         cell.classList.add('selected');
@@ -216,7 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
         timeListContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">잔여 인원 조회 중...</p>';
         const rule = RULES[selectedLocation];
         
-        // ⭐️ [추가] 갈현동 생존수영 날짜일 경우 타임슬롯 변경 ⭐️
         let currentSlots = rule.slots;
         if (selectedLocation === "장소 2 (갈현동)" && (dateStr === "2026-08-01" || dateStr === "2026-08-15")) {
             currentSlots = [
@@ -236,10 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             timeListContainer.innerHTML = ''; 
             
-            // ⭐️ [수정] rule.slots 대신 currentSlots 순회 ⭐️
             currentSlots.forEach(slot => {
                 const bookedCount = bookedMap[slot] || 0;
-                const remainCount = rule.capacity - bookedCount; // 정원 동일 적용(130명)
+                const remainCount = rule.capacity - bookedCount; 
                 const isFull = remainCount <= 0;
                 const label = document.createElement('label');
                 label.className = `time-item ${isFull ? 'disabled' : ''}`;
@@ -264,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar(currentYear, currentMonth);
     renderDefaultTimeSlots(selectedLocation);
 
-    // === ⭐️ 인원수 증감 (1인당 최대 4명 제한 유지) ===
     const btnMinus = document.getElementById('btnMinus');
     const btnPlus = document.getElementById('btnPlus');
     const peopleInput = document.getElementById('people');
@@ -276,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         btnPlus.addEventListener('click', () => { 
             let val = parseInt(peopleInput.value); 
-            if (val < 4) peopleInput.value = val + 1; // 최대 4명 방어 로직
+            if (val < 4) peopleInput.value = val + 1; 
         });
     }
 
@@ -288,11 +296,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const timeSlot = document.querySelector('input[name="timeSlot"]:checked');
             if (!timeSlot) return alert('예약 시간을 선택해주세요.');
             
-            // ⭐️ 과천 시민 검증 로직 ⭐️
             const address1 = document.getElementById('address1').value;
             if (!address1.includes('과천')) {
                 alert('죄송합니다. 과천 물놀이장은 과천 시민만 예약이 가능합니다.\n올바른 과천시 주소를 입력해 주세요.');
-                return; // 여기서 더 이상 진행하지 않고 막습니다.
+                return; 
             }
 
             const agree = document.getElementById('privacyAgree');
