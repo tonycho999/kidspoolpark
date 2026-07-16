@@ -28,6 +28,7 @@
             </ul>
         </nav>
     </header>
+
     <main class="container reserve-container">
         <h2 style="text-align: center; margin-bottom: 2rem;">예약하기</h2>
         
@@ -40,16 +41,6 @@
                 <input type="radio" name="locationSelect" value="장소 2 (갈현동)" style="display:none;">
                 <span class="tab-text" style="color:#666;">장소 2 (갈현동 846)</span>
             </label>
-        </div>
-
-        <!-- [추가된 부분] 갈현동(장소 2) 선택 시 나타날 주말 교육프로그램 배너 (기본은 숨김 처리) -->
-        <div id="survivalNotice" style="display: none; background-color: #e9f5ff; border: 1px solid #b8daff; color: #004085; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-            <h4 style="margin: 0 0 10px 0; font-size: 1.1rem;">🏊‍♂️ 갈현동 주말 교육프로그램 (생존수영) 사전예약 안내</h4>
-            <ul style="margin: 0; padding-left: 20px; font-size: 0.95rem; line-height: 1.5;">
-                <li><strong>7월 27일 오전 10시 오픈 :</strong> 8월 1일(토) 생존수영 (17:00-17:20 / 17:25-17:45 / 17:50-18:10)</li>
-                <li><strong>8월 10일 오전 10시 오픈 :</strong> 8월 15일(토) 생존수영 (17:00-17:20 / 17:25-17:45 / 17:50-18:10)</li>
-            </ul>
-            <p style="margin-top: 10px; margin-bottom: 0; font-size: 0.9rem; color: #dc3545;">※ 해당 일자의 17시 타임은 생존수영 전용으로 운영됩니다.</p>
         </div>
         
         <div class="reserve-grid">
@@ -137,6 +128,7 @@
             </div>
         </div>
     </main>
+
     <footer>
         <div class="company-name">케이앤와이 주식회사 (KNY Company)</div>
         <div class="footer-info">
@@ -149,6 +141,31 @@
         </div>
         <div>&copy; 2026 KNY Company. All Rights Reserved.</div>
     </footer>
+
+    <!-- ⭐️ [추가] 갈현동 주말 생존수영 팝업 (모바일 호환 완벽) ⭐️ -->
+    <div id="survivalPopup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: #fff; width: 90%; max-width: 380px; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.3);">
+            <div style="background-color: #e9f5ff; color: #004085; padding: 25px 20px; text-align: center;">
+                <h4 style="margin: 0 0 15px 0; font-size: 1.2rem; font-weight: bold;">🏊‍♂️ 갈현동 주말 생존수영 안내</h4>
+                <ul style="margin: 0; padding-left: 0; list-style: none; font-size: 0.95rem; line-height: 1.6; text-align: left; background: #fff; padding: 15px; border-radius: 8px;">
+                    <li style="margin-bottom: 10px;">
+                        <strong style="color: #d32f2f;">⏰ 7/27(월) 오전 10시 오픈</strong><br>
+                        👉 8/1(토) (17:00 / 17:25 / 17:50)
+                    </li>
+                    <li>
+                        <strong style="color: #d32f2f;">⏰ 8/10(월) 오전 10시 오픈</strong><br>
+                        👉 8/15(토) (17:00 / 17:25 / 17:50)
+                    </li>
+                </ul>
+            </div>
+            <!-- 7:3 비율 버튼 컨테이너 -->
+            <div style="display: flex; height: 50px; border-top: 1px solid #ddd;">
+                <button id="btnHideToday" style="flex: 7; background: #f8f9fa; border: none; border-right: 1px solid #ddd; cursor: pointer; font-size: 0.95rem; color: #555;">오늘 하루 보지 않기</button>
+                <button id="btnClosePopup" style="flex: 3; background: #fff; border: none; cursor: pointer; font-size: 0.95rem; font-weight: bold; color: #333;">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/main.js"></script>
     <script src="js/reserve.js"></script>
 </body>
