@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             start: "2026-07-25",
             end: "2026-08-17",
             closedDays: [2], // 매주 화요일(2) 휴장
-            capacity: 130,   
+            capacity: 130,   // 정원 130명 동일하게 적용
             slots: [
                 "1회차 (10:00~11:00)", "2회차 (11:30~12:30)", 
                 "3회차 (13:00~14:00)", "4회차 (14:30~15:30)", "5회차 (16:00~17:00)"
@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const API_BASE = 'https://reservation-api.tonycho999.workers.dev';
-
     let currentYear = 2026;
     let currentMonth = 7;
     
@@ -45,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderDefaultTimeSlots(locationName) {
         const rule = RULES[locationName];
         if (!rule) return;
-
         timeListContainer.innerHTML = ''; 
         rule.slots.forEach(slot => {
             const label = document.createElement('label');
@@ -63,6 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 장소 탭 변경 이벤트
     const locationRadios = document.querySelectorAll('input[name="locationSelect"]');
+    const survivalNotice = document.getElementById('survivalNotice'); // ⭐️ 배너 요소 가져오기
+
     locationRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
             document.querySelectorAll('.tab-label').forEach(label => {
@@ -75,6 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.parentElement.querySelector('.tab-text').style.fontWeight = 'bold';
             
             selectedLocation = e.target.value;
+
+            // ⭐️ [추가] 갈현동 선택 시 생존수영 안내 배너 표시
+            if (survivalNotice) {
+                survivalNotice.style.display = (selectedLocation === "장소 2 (갈현동)") ? "block" : "none";
+            }
+            
             hiddenDateInput.value = ''; 
             selectedDateDisplay.textContent = '날짜를 먼저 선택해주세요';
             
@@ -109,15 +115,21 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
             else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
         } else if (selectedLocation === "장소 2 (갈현동)") {
-            if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
-            else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
-            else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
-            else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
+            // ⭐️ [추가] 생존수영 예약 오픈 시간 예외 처리 ⭐️
+            if (dateStr === "2026-08-01") {
+                openTimeISO = "2026-07-27T10:00:00"; // 8/1 예약은 7/27 10시 오픈
+            } else if (dateStr === "2026-08-15") {
+                openTimeISO = "2026-08-10T10:00:00"; // 8/15 예약은 8/10 10시 오픈
+            } else {
+                if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
+                else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
+                else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
+                else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
+            }
         }
 
         // 범위에 속하지 않는 예외 날짜 예약 차단
         if (!openTimeISO) return false;
-
         const [oy, om, od] = openTimeISO.split('T')[0].split('-').map(Number);
         const [oh, omin, os] = openTimeISO.split('T')[1].split(':').map(Number);
         const openTime = new Date(oy, om - 1, od, oh, omin, os);
@@ -155,8 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstDay = new Date(year, month - 1, 1).getDay();
         const lastDate = new Date(year, month, 0).getDate();
         const rule = RULES[selectedLocation];
-
         let date = 1;
+
         for (let i = 0; i < 6; i++) {
             const row = document.createElement('tr');
             for (let j = 0; j < 7; j++) {
@@ -202,8 +214,17 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedDateDisplay.textContent = dateStr; 
         
         timeListContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">잔여 인원 조회 중...</p>';
-
         const rule = RULES[selectedLocation];
+        
+        // ⭐️ [추가] 갈현동 생존수영 날짜일 경우 타임슬롯 변경 ⭐️
+        let currentSlots = rule.slots;
+        if (selectedLocation === "장소 2 (갈현동)" && (dateStr === "2026-08-01" || dateStr === "2026-08-15")) {
+            currentSlots = [
+                "생존수영 1회차 (17:00~17:20)", 
+                "생존수영 2회차 (17:25~17:45)", 
+                "생존수영 3회차 (17:50~18:10)"
+            ];
+        }
         
         try {
             const response = await fetch(`${API_BASE}/api/capacity?location=${encodeURIComponent(selectedLocation)}&date=${dateStr}`);
@@ -213,14 +234,13 @@ document.addEventListener('DOMContentLoaded', () => {
             bookedData.forEach(item => {
                 bookedMap[item.time_slot] = item.booked;
             });
-
             timeListContainer.innerHTML = ''; 
             
-            rule.slots.forEach(slot => {
+            // ⭐️ [수정] rule.slots 대신 currentSlots 순회 ⭐️
+            currentSlots.forEach(slot => {
                 const bookedCount = bookedMap[slot] || 0;
-                const remainCount = rule.capacity - bookedCount;
+                const remainCount = rule.capacity - bookedCount; // 정원 동일 적용(130명)
                 const isFull = remainCount <= 0;
-
                 const label = document.createElement('label');
                 label.className = `time-item ${isFull ? 'disabled' : ''}`;
                 
@@ -235,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 timeListContainer.appendChild(label);
             });
-
         } catch (error) {
             timeListContainer.innerHTML = '<p style="color:red; text-align:center;">데이터를 불러오는 데 실패했습니다.</p>';
             renderDefaultTimeSlots(selectedLocation); 
@@ -245,25 +264,31 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar(currentYear, currentMonth);
     renderDefaultTimeSlots(selectedLocation);
 
-    // === 인원수 증감 및 폼 제출 ===
+    // === ⭐️ 인원수 증감 (1인당 최대 4명 제한 유지) ===
     const btnMinus = document.getElementById('btnMinus');
     const btnPlus = document.getElementById('btnPlus');
     const peopleInput = document.getElementById('people');
+
     if(btnMinus && btnPlus) {
-        btnMinus.addEventListener('click', () => { let val = parseInt(peopleInput.value); if (val > 1) peopleInput.value = val - 1; });
-        btnPlus.addEventListener('click', () => { let val = parseInt(peopleInput.value); if (val < 4) peopleInput.value = val + 1; });
+        btnMinus.addEventListener('click', () => { 
+            let val = parseInt(peopleInput.value); 
+            if (val > 1) peopleInput.value = val - 1; 
+        });
+        btnPlus.addEventListener('click', () => { 
+            let val = parseInt(peopleInput.value); 
+            if (val < 4) peopleInput.value = val + 1; // 최대 4명 방어 로직
+        });
     }
 
     const reserveForm = document.getElementById('reserveForm');
     if (reserveForm) {
         reserveForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             if (!hiddenDateInput.value) return alert('달력에서 예약 날짜를 선택해주세요.');
             const timeSlot = document.querySelector('input[name="timeSlot"]:checked');
             if (!timeSlot) return alert('예약 시간을 선택해주세요.');
             
-            // ⭐️ 과천 시민 검증 로직 추가 ⭐️
+            // ⭐️ 과천 시민 검증 로직 ⭐️
             const address1 = document.getElementById('address1').value;
             if (!address1.includes('과천')) {
                 alert('죄송합니다. 과천 물놀이장은 과천 시민만 예약이 가능합니다.\n올바른 과천시 주소를 입력해 주세요.');
@@ -322,7 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                     formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
                 } else {
                     alert(`예약 처리 중 오류가 발생했습니다: ${result.message || result.error || '알 수 없는 오류'}`);
                     submitBtn.textContent = '예약 신청하기';
