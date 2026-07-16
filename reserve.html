@@ -28,7 +28,6 @@
             </ul>
         </nav>
     </header>
-
     <main class="container reserve-container">
         <h2 style="text-align: center; margin-bottom: 2rem;">예약하기</h2>
         
@@ -41,6 +40,16 @@
                 <input type="radio" name="locationSelect" value="장소 2 (갈현동)" style="display:none;">
                 <span class="tab-text" style="color:#666;">장소 2 (갈현동 846)</span>
             </label>
+        </div>
+
+        <!-- [추가된 부분] 갈현동(장소 2) 선택 시 나타날 주말 교육프로그램 배너 (기본은 숨김 처리) -->
+        <div id="survivalNotice" style="display: none; background-color: #e9f5ff; border: 1px solid #b8daff; color: #004085; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 1.1rem;">🏊‍♂️ 갈현동 주말 교육프로그램 (생존수영) 사전예약 안내</h4>
+            <ul style="margin: 0; padding-left: 20px; font-size: 0.95rem; line-height: 1.5;">
+                <li><strong>7월 27일 오전 10시 오픈 :</strong> 8월 1일(토) 생존수영 (17:00-17:20 / 17:25-17:45 / 17:50-18:10)</li>
+                <li><strong>8월 10일 오전 10시 오픈 :</strong> 8월 15일(토) 생존수영 (17:00-17:20 / 17:25-17:45 / 17:50-18:10)</li>
+            </ul>
+            <p style="margin-top: 10px; margin-bottom: 0; font-size: 0.9rem; color: #dc3545;">※ 해당 일자의 17시 타임은 생존수영 전용으로 운영됩니다.</p>
         </div>
         
         <div class="reserve-grid">
@@ -59,12 +68,10 @@
                 </table>
                 <p class="step-desc">원하시는 날짜를 선택하세요.</p>
             </div>
-
             <div class="step-box">
                 <div class="step-title" id="selectedDateDisplay">날짜를 먼저 선택해주세요</div>
                 <div class="time-list" id="timeList"></div>
             </div>
-
             <div class="step-box">
                 <div class="step-title">예약자 정보</div>
                 <p class="step-desc" style="text-align: right; font-size: 0.8rem;">보호자 1인 ~ 4인 예약 가능</p>
@@ -83,7 +90,6 @@
                             <input type="text" id="email2" style="width:50%" required>
                         </div>
                     </div>
-
                     <div class="form-row">
                         <label>연락처 *</label>
                         <div class="flex-row">
@@ -92,7 +98,6 @@
                             <input type="text" id="phone3" style="width:30%" maxlength="4" required>
                         </div>
                     </div>
-
                     <div class="form-row">
                         <label>생년월일 *</label>
                         <div class="flex-row">
@@ -101,7 +106,6 @@
                             <input type="number" id="birthDay" placeholder="DD" style="width:25%" required> 일
                         </div>
                     </div>
-
                     <div class="form-row">
                         <label>주소 *</label>
                         <div class="flex-row" style="margin-bottom: 5px;">
@@ -112,7 +116,6 @@
                         <input type="text" id="address2" placeholder="상세주소" style="width:100%;" required>
                         <p style="color: #dc3545; font-size: 0.85rem; margin-top: 5px; margin-bottom: 0;">*과천시민 확인용 주소를 넣어주세요</p>
                     </div>
-
                     <div class="form-row">
                         <label>인원 *</label>
                         <div class="counter-box">
@@ -121,7 +124,6 @@
                             <button type="button" id="btnPlus">+</button>
                         </div>
                     </div>
-
                     <div class="privacy-box">
                         <strong>개인정보 수집 및 이용 안내</strong>
                         <p>- 수집항목: 성명, 이메일, 연락처, 생년월일, 주소</p>
@@ -130,13 +132,11 @@
                             <input type="checkbox" id="privacyAgree" required> (필수) 개인정보 수집 및 이용에 동의합니다.
                         </label>
                     </div>
-
                     <button type="submit" class="submit-btn" style="margin-top: 1rem;">예약 신청하기</button>
                 </form>
             </div>
         </div>
     </main>
-
     <footer>
         <div class="company-name">케이앤와이 주식회사 (KNY Company)</div>
         <div class="footer-info">
@@ -149,7 +149,6 @@
         </div>
         <div>&copy; 2026 KNY Company. All Rights Reserved.</div>
     </footer>
-
     <script src="js/main.js"></script>
     <script src="js/reserve.js"></script>
 </body>
