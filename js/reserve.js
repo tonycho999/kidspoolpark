@@ -40,32 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedDateDisplay = document.getElementById('selectedDateDisplay');
     const hiddenDateInput = document.getElementById('date');
 
-    // === ⭐️ 팝업 제어 로직 (오늘 하루 보지 않기) ===
-    function setHideToday() {
-        const expiry = new Date();
-        expiry.setHours(23, 59, 59, 999); // 오늘 자정까지
-        localStorage.setItem('hideSurvivalPopup', expiry.getTime());
-    }
-
-    function shouldShowPopup() {
-        const hideUntil = localStorage.getItem('hideSurvivalPopup');
-        if (!hideUntil) return true; // 쿠키 없으면 무조건 보여줌
-        if (new Date().getTime() > parseInt(hideUntil)) {
-            localStorage.removeItem('hideSurvivalPopup'); // 시간 지났으면 삭제하고 보여줌
-            return true;
-        }
-        return false; // 아직 자정 안지났으면 숨김
-    }
-
-    const survivalPopup = document.getElementById('survivalPopup');
-    document.getElementById('btnClosePopup')?.addEventListener('click', () => {
-        survivalPopup.style.display = 'none';
-    });
-    document.getElementById('btnHideToday')?.addEventListener('click', () => {
-        setHideToday();
-        survivalPopup.style.display = 'none';
-    });
-
     // 기본 시간표 렌더링
     function renderDefaultTimeSlots(locationName) {
         const rule = RULES[locationName];
@@ -100,11 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.parentElement.querySelector('.tab-text').style.fontWeight = 'bold';
             
             selectedLocation = e.target.value;
-
-            // ⭐️ 갈현동 선택 시 팝업 띄우기 (조건 충족 시에만)
-            if (selectedLocation === "장소 2 (갈현동)" && shouldShowPopup()) {
-                if (survivalPopup) survivalPopup.style.display = 'flex';
-            }
             
             hiddenDateInput.value = ''; 
             selectedDateDisplay.textContent = '날짜를 먼저 선택해주세요';
