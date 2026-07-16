@@ -142,7 +142,7 @@
         <div>&copy; 2026 KNY Company. All Rights Reserved.</div>
     </footer>
 
-    <!-- ⭐️ [추가] 갈현동 주말 생존수영 팝업 (모바일 호환 완벽) ⭐️ -->
+    <!-- ⭐️ 갈현동 주말 생존수영 팝업 ⭐️ -->
     <div id="survivalPopup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;">
         <div style="background: #fff; width: 90%; max-width: 380px; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.3);">
             <div style="background-color: #e9f5ff; color: #004085; padding: 25px 20px; text-align: center;">
@@ -165,6 +165,48 @@
             </div>
         </div>
     </div>
+
+    <!-- ⭐️ HTML 내부에 팝업 제어 전용 스크립트 작성 ⭐️ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var popup = document.getElementById('survivalPopup');
+            var btnClose = document.getElementById('btnClosePopup');
+            var btnHide = document.getElementById('btnHideToday');
+
+            // '오늘 하루 보지 않기' 기간이 남았는지 체크
+            function shouldShow() {
+                var hideUntil = localStorage.getItem('hideSurvivalPopup');
+                if (!hideUntil) return true;
+                if (new Date().getTime() > parseInt(hideUntil)) {
+                    localStorage.removeItem('hideSurvivalPopup');
+                    return true;
+                }
+                return false;
+            }
+
+            // 페이지 로드 시 팝업 띄우기
+            if (popup && shouldShow()) {
+                popup.style.display = 'flex';
+            }
+
+            // 닫기 버튼 클릭 시
+            if (btnClose) {
+                btnClose.addEventListener('click', function() {
+                    popup.style.display = 'none';
+                });
+            }
+
+            // 오늘 하루 보지 않기 버튼 클릭 시
+            if (btnHide) {
+                btnHide.addEventListener('click', function() {
+                    var expiry = new Date();
+                    expiry.setHours(23, 59, 59, 999); // 오늘 자정까지
+                    localStorage.setItem('hideSurvivalPopup', expiry.getTime());
+                    popup.style.display = 'none';
+                });
+            }
+        });
+    </script>
 
     <script src="js/main.js"></script>
     <script src="js/reserve.js"></script>
