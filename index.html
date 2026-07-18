@@ -13,7 +13,6 @@
             color: #555;
             text-align: center;
         }
-
         .gallery-wrapper {
             width: 100%;
             max-width: 1000px; 
@@ -24,14 +23,12 @@
             padding: 0 15px;   
             box-sizing: border-box;
         }
-
         .top-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             width: 100%;
         }
-
         .top-row img {
             width: 100%;
             height: 350px; 
@@ -40,14 +37,12 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
-
         .bottom-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr); 
             gap: 15px;
             width: 100%;
         }
-
         .bottom-row img {
             width: 100%;
             height: 250px; 
@@ -56,17 +51,14 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
-
         .gallery-wrapper img:hover {
             transform: scale(1.02);
             z-index: 1; 
         }
-
         /* ⭐️ 모바일 전용 줄바꿈 클래스 (기본적으로 display: none) */
         .mobile-br {
             display: none;
         }
-
         @media (max-width: 768px) {
             .top-row, .bottom-row {
                 grid-template-columns: repeat(2, 1fr); 
@@ -84,7 +76,6 @@
                 display: block;
             }
         }
-
         /* ⭐️ 이벤트 팝업 스타일 (모바일 기본) */
         #eventPopup {
             display: none; 
@@ -99,7 +90,7 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
             z-index: 9999;
             overflow: hidden;
-            border: 4px solid #0056b3;
+            border: 4px solid #dc3545; /* 테두리를 붉은색으로 변경 */
         }
         
         #popupOverlay {
@@ -109,36 +100,31 @@
             background: rgba(0,0,0,0.6);
             z-index: 9998;
         }
-
         .popup-header {
-            background-color: #0056b3;
+            background-color: #dc3545; /* 헤더 배경색을 긴급 느낌의 붉은색으로 변경 */
             color: white;
             text-align: center;
             padding: 15px;
             font-size: 1.2rem; 
             font-weight: bold;
         }
-
         .popup-body {
             padding: 25px 20px;
             text-align: center;
             line-height: 1.7;
         }
-
         .popup-body h3 {
             color: #d9534f;
             margin-top: 0;
             margin-bottom: 10px;
             font-size: 1.2rem;
         }
-
         .popup-body p {
             margin: 10px 0;
             color: #333;
             font-weight: bold;
             font-size: 1.05rem;
         }
-
         .popup-body ul {
             list-style: none;
             padding: 0;
@@ -147,22 +133,18 @@
             font-weight: bold;
             font-size: 1.15rem;
         }
-
         .popup-body ul li { margin-bottom: 8px; }
-
         .popup-desc {
             font-size: 0.95rem; 
-            color: #d9534f; 
+            color: #555; 
             margin-top: 15px !important;
             font-weight: bold;
         }
-
         .popup-footer {
             background-color: #f8f9fa;
             display: flex;
             border-top: 1px solid #ddd;
         }
-
         .popup-btn {
             padding: 15px;
             border: none;
@@ -182,18 +164,16 @@
         .btn-close {
             flex: 3; 
         }
-
         .popup-btn:hover { background-color: #e2e2e2; }
-
         /* ⭐️ PC 화면용 팝업 확대 스타일 (화면이 768px 이상일 때 적용) */
         @media (min-width: 769px) {
             #eventPopup {
-                max-width: 650px; 
+                max-width: 500px; 
                 border-radius: 20px;
             }
             .popup-header {
                 padding: 20px;
-                font-size: 1.7rem; 
+                font-size: 1.6rem; 
             }
             .popup-body {
                 padding: 40px 30px;
@@ -203,13 +183,6 @@
             }
             .popup-body p {
                 font-size: 1.3rem;
-            }
-            .popup-body ul {
-                font-size: 1.4rem;
-                margin: 25px 0;
-            }
-            .popup-body ul li {
-                margin-bottom: 12px;
             }
             .popup-desc {
                 font-size: 1.1rem;
@@ -236,7 +209,6 @@
             </ul>
         </nav>
     </header>
-
     <main class="container">
         <h1 style="text-align: center;">환영합니다!</h1>
         <p class="intro-text">과천시 야외 물놀이장의 생생한 현장 모습을 확인하시고, 상단 메뉴를 통해 예약을 진행해 주세요.</p>
@@ -252,7 +224,6 @@
                 <img src="public/images/1000019832.png" alt="물놀이터 시설 2">
                 <img src="public/images/1000019833.png" alt="물놀이터 시설 3">
             </div>
-
             <div class="bottom-row">
                 <img src="public/images/1000019874.png" alt="물놀이터 시설 4">
                 <img src="public/images/1000019876.png" alt="물놀이터 시설 5">
@@ -261,24 +232,21 @@
         </div>
     </main>
 
-    <!-- ⭐️ 이벤트 팝업창 HTML 구조 -->
+    <!-- ⭐️ 우천 휴장 팝업창 HTML 구조 -->
     <div id="popupOverlay"></div>
     <div id="eventPopup">
         <div class="popup-header">
-            🎉 갈현동 야외물놀이장 개장식에 놀러 오세요! 💦
+            📢 긴급 안내 : 우천 휴장
         </div>
         <div class="popup-body">
-            <h3>7월 25일(토) 오전 9시 30분부터</h3>
-            <p>다양한 무료 이벤트가 기다립니다!</p>
-            <ul>
-                <li>🎈 버블 & 마술쇼</li>
-                <li>🎈 키다리삐에로 풍선아트</li>
-                <li>🎈 페이스페인팅</li>
-                <li>🎈 타투스티커</li>
-            </ul>
-            <!-- ⭐️ 모바일에서만 줄바꿈 되도록 <br class="mobile-br"> 적용 -->
-            <p style="margin-top: 15px; color: #555; font-weight: normal;">가족과 함께 시원하고 즐거운 추억을<br class="mobile-br">만들어보세요!</p>
-            <p class="popup-desc">※ 원활한 행사 진행을 위해<br class="mobile-br">오전 9시 30분까지 입장해주세요.</p>
+            <h3>오늘 야외 물놀이장 휴장</h3>
+            <p style="color: #dc3545;">현재 강우로 인하여 안전을 위해<br>오늘 하루 물놀이장 운영을 중단합니다.</p>
+            
+            <p style="margin-top: 15px; color: #555; font-weight: normal; font-size: 1rem;">
+                이용에 불편을 드려 대단히 죄송합니다.<br class="mobile-br">
+                안전한 시설 운영을 위한 조치이오니<br class="mobile-br">
+                시민 여러분의 너른 양해 부탁드립니다.
+            </p>
         </div>
         <div class="popup-footer">
             <button class="popup-btn btn-today" onclick="closePopup('today')">오늘 하루 보지않기</button>
@@ -301,14 +269,28 @@
 
     <script src="js/main.js"></script>
 
-    <!-- 팝업 제어 자바스크립트 -->
+    <!-- ⭐️ 팝업 제어 자바스크립트 -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const popup = document.getElementById('eventPopup');
             const overlay = document.getElementById('popupOverlay');
             
-            const popupDeadline = new Date('2026-07-25T10:00:00');
+            // ⭐️ 휴장 팝업이 노출될 날짜 (YYYY-MM-DD 형식)
+            const targetDate = '2026-07-18'; 
+            
+            // 현재 한국 시간 기준 날짜 구하기
             const now = new Date();
+            const formatter = new Intl.DateTimeFormat('ko-KR', {
+                timeZone: 'Asia/Seoul',
+                year: 'numeric', month: '2-digit', day: '2-digit'
+            });
+            const parts = formatter.formatToParts(now);
+            const kstYear = parts.find(p => p.type === 'year').value;
+            const kstMonth = parts.find(p => p.type === 'month').value;
+            const kstDay = parts.find(p => p.type === 'day').value;
+            
+            // 포맷팅 (예: 2026-07-18)
+            const todayStr = `${kstYear}-${kstMonth}-${kstDay}`;
 
             function getCookie(name) {
                 let matches = document.cookie.match(new RegExp(
@@ -317,7 +299,8 @@
                 return matches ? decodeURIComponent(matches[1]) : undefined;
             }
 
-            if (now < popupDeadline && !getCookie('hideEventPopup')) {
+            // 오늘 날짜가 지정된 날짜(targetDate)와 같고, '오늘 하루 보지않기' 쿠키가 없을 때만 팝업 표시
+            if (todayStr === targetDate && !getCookie('hideRainPopup')) {
                 popup.style.display = 'block';
                 overlay.style.display = 'block';
             }
@@ -329,7 +312,7 @@
                 if (type === 'today') {
                     let tomorrow = new Date();
                     tomorrow.setHours(23, 59, 59, 999);
-                    document.cookie = "hideEventPopup=true; expires=" + tomorrow.toUTCString() + "; path=/";
+                    document.cookie = "hideRainPopup=true; expires=" + tomorrow.toUTCString() + "; path=/";
                 }
             };
         });
