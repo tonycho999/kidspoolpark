@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 장소 탭 변경 이벤트
     const locationRadios = document.querySelectorAll('input[name="locationSelect"]');
-
     locationRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
             document.querySelectorAll('.tab-label').forEach(label => {
@@ -85,6 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 예약 가능 여부 체크 로직
     function isSelectable(dateStr, rule) {
+        // ⭐️ 7월 18일 우천 휴장 강제 차단 ⭐️
+        if (dateStr === "2026-07-18") return false;
+
         const [y, m, d] = dateStr.split('-').map(Number);
         const targetDate = new Date(y, m - 1, d, 0, 0, 0);
         
@@ -166,7 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         cell.addEventListener('click', () => handleDateClick(cell, dateStr));
                     } else {
                         cell.classList.add('disabled');
-                        cell.title = '아직 예약이 오픈되지 않았거나 예약 불가한 날짜(휴장일 등)입니다.\n(예약은 매주 월요일 오전 10시 오픈)';
+                        
+                        // ⭐️ 7월 18일인 경우 안내 메시지 다르게 표시 ⭐️
+                        if (dateStr === "2026-07-18") {
+                            cell.title = '우천으로 인하여 휴장합니다 (예약 불가)';
+                        } else {
+                            cell.title = '아직 예약이 오픈되지 않았거나 예약 불가한 날짜(휴장일 등)입니다.\n(예약은 매주 월요일 오전 10시 오픈)';
+                        }
                     }
                     date++;
                 }
