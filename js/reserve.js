@@ -106,14 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
             else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
         } else if (selectedLocation === "장소 2 (갈현동)") {
-            if (dateStr === "2026-08-01") openTimeISO = "2026-07-27T10:00:00"; 
-            else if (dateStr === "2026-08-15") openTimeISO = "2026-08-10T10:00:00";
-            else {
-                if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
-                else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
-                else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
-                else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
-            }
+            if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
+            else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
+            else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
+            else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
         }
 
         if (!openTimeISO) return false;
@@ -204,15 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
         timeListContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">잔여 인원 조회 중...</p>';
         const rule = RULES[selectedLocation];
         
-        let currentSlots = rule.slots;
-        if (selectedLocation === "장소 2 (갈현동)" && (dateStr === "2026-08-01" || dateStr === "2026-08-15")) {
-            currentSlots = [
-                "생존수영 1회차 (17:00~17:20)", 
-                "생존수영 2회차 (17:25~17:45)", 
-                "생존수영 3회차 (17:50~18:10)"
-            ];
-        }
-        
         try {
             const response = await fetch(`${API_BASE}/api/capacity?location=${encodeURIComponent(selectedLocation)}&date=${dateStr}`);
             const bookedData = await response.json();
@@ -223,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             timeListContainer.innerHTML = ''; 
             
-            currentSlots.forEach(slot => {
+            rule.slots.forEach(slot => {
                 const bookedCount = bookedMap[slot] || 0;
                 const remainCount = rule.capacity - bookedCount; 
                 const isFull = remainCount <= 0;
