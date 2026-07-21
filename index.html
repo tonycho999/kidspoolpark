@@ -236,13 +236,18 @@
     <div id="popupOverlay"></div>
     <div id="eventPopup">
         <div class="popup-header">
-            📢 긴급 안내 : 우천 휴장
+            📢 긴급 안내 : 오전 우천 휴장
         </div>
         <div class="popup-body">
-            <h3>오늘 야외 물놀이장 휴장</h3>
-            <p style="color: #dc3545;">현재 강우로 인하여 안전을 위해<br>오늘 하루 물놀이장 운영을 중단합니다.</p>
+            <h3>오늘 오전 야외 물놀이장 휴장</h3>
+            <p style="color: #dc3545;">현재 강우로 인하여 안전을 위해<br>오늘 오전 물놀이장 운영을 중단합니다.</p>
             
-            <p style="margin-top: 15px; color: #555; font-weight: normal; font-size: 1rem;">
+            <p style="margin-top: 15px; color: #0056b3; font-weight: bold; font-size: 1.1rem;">
+                오후 운영 여부는 날씨 상황을 지켜본 후<br class="mobile-br">
+                추후 다시 공지해 드릴 예정입니다.
+            </p>
+
+            <p style="margin-top: 15px; color: #555; font-weight: normal; font-size: 0.95rem;">
                 이용에 불편을 드려 대단히 죄송합니다.<br class="mobile-br">
                 안전한 시설 운영을 위한 조치이오니<br class="mobile-br">
                 시민 여러분의 너른 양해 부탁드립니다.
@@ -275,22 +280,9 @@
             const popup = document.getElementById('eventPopup');
             const overlay = document.getElementById('popupOverlay');
             
-            // ⭐️ 휴장 팝업이 노출될 날짜 (YYYY-MM-DD 형식)
-            const targetDate = '2026-07-18'; 
-            
-            // 현재 한국 시간 기준 날짜 구하기
-            const now = new Date();
-            const formatter = new Intl.DateTimeFormat('ko-KR', {
-                timeZone: 'Asia/Seoul',
-                year: 'numeric', month: '2-digit', day: '2-digit'
-            });
-            const parts = formatter.formatToParts(now);
-            const kstYear = parts.find(p => p.type === 'year').value;
-            const kstMonth = parts.find(p => p.type === 'month').value;
-            const kstDay = parts.find(p => p.type === 'day').value;
-            
-            // 포맷팅 (예: 2026-07-18)
-            const todayStr = `${kstYear}-${kstMonth}-${kstDay}`;
+            // ⭐️ 휴장 공지 활성화 스위치 (true: 켜기, false: 끄기)
+            // 나중에 공지를 내리실 때는 아래 true를 false로 바꿔주시면 됩니다.
+            const isNoticeActive = true; 
 
             function getCookie(name) {
                 let matches = document.cookie.match(new RegExp(
@@ -299,8 +291,8 @@
                 return matches ? decodeURIComponent(matches[1]) : undefined;
             }
 
-            // 오늘 날짜가 지정된 날짜(targetDate)와 같고, '오늘 하루 보지않기' 쿠키가 없을 때만 팝업 표시
-            if (todayStr === targetDate && !getCookie('hideRainPopup')) {
+            // 공지가 켜져있고, '오늘 하루 보지않기' 쿠키가 없을 때만 팝업 표시
+            if (isNoticeActive && !getCookie('hideRainPopup')) {
                 popup.style.display = 'block';
                 overlay.style.display = 'block';
             }
@@ -310,12 +302,11 @@
                 overlay.style.display = 'none';
 
                 if (type === 'today') {
+                    // '오늘 하루 보지않기' 클릭 시 내일 자정까지 쿠키 저장
                     let tomorrow = new Date();
                     tomorrow.setHours(23, 59, 59, 999);
                     document.cookie = "hideRainPopup=true; expires=" + tomorrow.toUTCString() + "; path=/";
                 }
+                // '닫기' 클릭 시에는 쿠키를 굽지 않으므로, 새로고침 시 다시 팝업이 뜹니다.
             };
-        });
-    </script>
-</body>
-</html>
+        }
