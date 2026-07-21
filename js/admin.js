@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (status === '예약완료') {
             return 'background-color: #28a745; color: white; border: none; padding: 6px; border-radius: 4px; font-weight: bold; cursor: pointer; outline: none;';
         } else if (status === '예약취소') {
-            return 'background-color: #6c757d; color: white; border: none; padding: 6px; border-radius: 4px; font-weight: bold; cursor: pointer; outline: none;';
+            return 'background-color: #dc3545; color: white; border: none; padding: 6px; border-radius: 4px; font-weight: bold; cursor: pointer; outline: none;';
         } else { // 예약대기
             return 'background-color: #ffffff; color: #333; border: 1px solid #ccc; padding: 5px; border-radius: 4px; font-weight: bold; cursor: pointer; outline: none;';
         }
@@ -54,7 +54,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         dataToRender.forEach(item => {
             const currentStatus = item.status || '예약대기';
             
-            // ⭐️ 기존 요약박스 계산로직 유지 (인원 합산)
             const peopleCount = parseInt(item.people) || 0;
             if (currentStatus === '예약취소') {
                 sumCanceled += peopleCount;
@@ -64,7 +63,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const row = document.createElement('tr');
             
-            // 뱃지 텍스트 및 색상 로직
             const isMunyhyeon = item.location.includes('장소 1');
             const locationColor = isMunyhyeon ? '#0056b3' : '#28a745'; 
             const locationText = isMunyhyeon ? '문현동' : '갈현동';     
@@ -84,7 +82,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <option value="예약완료" style="background:#fff; color:#333;" ${currentStatus === '예약완료' ? 'selected' : ''}>예약완료</option>
                         <option value="예약취소" style="background:#fff; color:#333;" ${currentStatus === '예약취소' ? 'selected' : ''}>예약취소</option>
                     </select>
-                    <!-- 삭제 버튼 -->
                     <button class="btn-delete" data-id="${item.id}">X 삭제</button>
                 </td>
             `;
@@ -130,7 +127,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const reservationId = e.target.getAttribute('data-id');
-                
                 if (!confirm("정말로 이 예약 기록을 완전히 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.")) {
                     return;
                 }
@@ -213,10 +209,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (res.ok && data.success) {
                 noticeActiveCheckbox.checked = data.is_notice_active;
                 slotCheckboxes.forEach(cb => {
-                    cb.checked = data.closed_slots.includes(cb.value);
+                    // 유연한 문자열 매칭 (예: "1회차"가 "1회차 (10:00~11:00)"에 포함되어 있는지)
+                    cb.checked = data.closed_slots.some(closed => closed.includes(cb.value));
                 });
             } else {
-                // 데이터가 없으면 초기화
                 noticeActiveCheckbox.checked = false;
                 slotCheckboxes.forEach(cb => cb.checked = false);
             }
@@ -225,11 +221,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 장소나 날짜를 변경할 때마다 설정 불러오기
     if (settingDateInput) settingDateInput.addEventListener('change', loadSettings);
     if (settingLocationSelect) settingLocationSelect.addEventListener('change', loadSettings);
 
-    // 설정 저장 버튼 클릭 시 API 전송
+    // ⭐️ 설정 저장 버튼 클릭 시 API 전송 및 완료 메시지
     if (btnSaveSettings) {
         btnSaveSettings.addEventListener('click', async () => {
             const dateStr = settingDateInput.value;
@@ -259,9 +254,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    alert(`[${locStr}] ${dateStr} 운영 설정이 성공적으로 저장되었습니다!`);
+                    // ⭐️ 저장 성공 시 명확한 팝업 메시지 노출
+                    alert(`✅ [${locStr}] 장소의 ${dateStr} 운영 설정이 성공적으로 저장되었습니다!`);
                 } else {
-                    alert('설정 저장에 실패했습니다.');
+                    alert('❌ 설정 저장에 실패했습니다.');
                 }
             } catch (error) {
                 alert('네트워크 오류가 발생했습니다.');
@@ -272,7 +268,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // ⭐️ 초기 데이터 로드 시 완벽 정렬 보장
     try {
         const response = await fetch(GET_URL);
         const data = await response.json();
@@ -283,12 +278,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         reservationList.innerHTML = '<tr><td colspan="6">데이터를 불러오는 데 실패했습니다.</td></tr>';
     }
 
-    // 관리자 페이지 진입 시 오늘 날짜를 기본 세팅
     if (settingDateInput) {
         const today = new Date();
         const offset = today.getTimezoneOffset() * 60000;
         const dateLocal = (new Date(today - offset)).toISOString().split('T')[0];
         settingDateInput.value = dateLocal;
-        loadSettings(); // 첫 로딩 시 오늘 설정값 불러오기
+        loadSettings(); 
     }
 });
