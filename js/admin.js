@@ -1,23 +1,33 @@
 document.addEventListener('DOMContentLoaded', async () => {
+
     const reservationList = document.getElementById('reservationList');
     
     // 요약 박스 엘리먼트 (인원수 표시용)
     const totalBookedEl = document.getElementById('totalBookedCount');
     const totalCanceledEl = document.getElementById('totalCanceledCount');
     
-    // 필터 엘리먼트들
+    // 예약 필터 엘리먼트들
     const searchInput = document.getElementById('searchInput');
     const filterLocation = document.getElementById('filterLocation');
     const filterDate = document.getElementById('filterDate');
     const filterTime = document.getElementById('filterTime');
+
+    // ⭐️ 운영 설정 (우천 휴장) 엘리먼트들
+    const settingLocationSelect = document.getElementById('settingLocation');
+    const settingDateInput = document.getElementById('settingDate');
+    const noticeActiveCheckbox = document.getElementById('noticeActive');
+    const slotCheckboxes = document.querySelectorAll('.slot-checkbox');
+    const btnSaveSettings = document.getElementById('btnSaveSettings');
     
-    const GET_URL = 'https://reservation-api.tonycho999.workers.dev/api/reservations';
-    const UPDATE_URL = 'https://reservation-api.tonycho999.workers.dev/api/update-status';
-    const DELETE_URL = 'https://reservation-api.tonycho999.workers.dev/api/delete-reservation';
+    // ⭐️ 서버 주소
+    const API_BASE = 'https://reservation-api.tonycho999.workers.dev';
+    const GET_URL = `${API_BASE}/api/reservations`;
+    const UPDATE_URL = `${API_BASE}/api/update-status`;
+    const DELETE_URL = `${API_BASE}/api/delete-reservation`;
+    const SETTINGS_URL = `${API_BASE}/api/settings`;
 
     let allReservations = []; 
 
-    // 상태에 따른 배경색/글자색 스타일 반환 함수
     function getStatusStyle(status) {
         if (status === '예약완료') {
             return 'background-color: #28a745; color: white; border: none; padding: 6px; border-radius: 4px; font-weight: bold; cursor: pointer; outline: none;';
@@ -44,6 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         dataToRender.forEach(item => {
             const currentStatus = item.status || '예약대기';
             
+            // ⭐️ 기존 요약박스 계산로직 유지 (인원 합산)
             const peopleCount = parseInt(item.people) || 0;
             if (currentStatus === '예약취소') {
                 sumCanceled += peopleCount;
@@ -57,7 +68,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isMunyhyeon = item.location.includes('장소 1');
             const locationColor = isMunyhyeon ? '#0056b3' : '#28a745'; 
             const locationText = isMunyhyeon ? '문현동' : '갈현동';     
-
             const locationBadge = `<span style="background:${locationColor}; color:white; padding:3px 6px; border-radius:3px; font-size:0.8em; margin-bottom:5px; display:inline-block; font-weight:bold;">${locationText}</span><br>`;
             const dateTimeStr = `${locationBadge}<strong>${item.date}</strong><br><span style="font-size:0.85em; color:#666;">${item.time_slot}</span>`;
             const userInfoStr = `<strong>${item.name}</strong> (${item.phone})<br><span style="font-size:0.85em; color:#666;">${item.email} / ${item.birthdate}</span>`;
@@ -93,7 +103,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             selectElement.addEventListener('change', async (e) => {
                 const reservationId = e.target.getAttribute('data-id');
                 const newStatus = e.target.value;
-
                 try {
                     const updateRes = await fetch(UPDATE_URL, {
                         method: 'PUT',
@@ -125,7 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!confirm("정말로 이 예약 기록을 완전히 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.")) {
                     return;
                 }
-
                 try {
                     const deleteRes = await fetch(DELETE_URL, {
                         method: 'DELETE',
@@ -134,7 +142,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                     
                     if (deleteRes.ok) {
-                        // 성공 시 전체 배열에서 명확하게 제거
                         allReservations = allReservations.filter(item => item.id != reservationId);
                         applyFilters(); 
                         alert('예약이 완전히 삭제되었습니다.');
@@ -150,28 +157,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // ⭐️ 데이터를 정렬하는 핵심 함수
-    // ⭐️ 데이터를 정렬하는 핵심 함수 (가까운 날짜순, 빠른 회차순)
     function sortReservations(dataArray) {
         return dataArray.sort((a, b) => {
-            // 1순위: 날짜 기준 오름차순 (오늘과 가까운 빠른 날짜가 맨 위로!)
             if (a.date !== b.date) {
-                // a.date - b.date 순서로 빼면 과거(가까운) 날짜가 먼저 나옵니다.
                 return new Date(a.date) - new Date(b.date); 
             }
-            
-            // 2순위: 날짜가 같으면 회차 빠른 순서대로 (오름차순)
-            // 회차 문자열(예: "3회차 (14:00~14:50)")에서 숫자만 추출하여 비교
             const matchA = a.time_slot.match(/\d+/);
             const matchB = b.time_slot.match(/\d+/);
-            
             const numA = matchA ? parseInt(matchA[0], 10) : 0;
             const numB = matchB ? parseInt(matchB[0], 10) : 0;
-            
             return numA - numB; 
         });
     }
-
 
     function applyFilters() {
         const keyword = searchInput.value.toLowerCase().trim();
@@ -188,13 +185,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const matchLoc = loc === "" || item.location.includes(loc);
             const matchDate = date === "" || item.date === date;
             const matchTime = time === "" || item.time_slot.includes(time);
-
             return matchKeyword && matchLoc && matchDate && matchTime;
         });
 
-        // ⭐️ 필터링된 데이터를 다시 한번 강력하게 정렬
         filteredData = sortReservations(filteredData);
-        
         renderTable(filteredData);
     }
 
@@ -202,17 +196,99 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(el) el.addEventListener('input', applyFilters);
     });
 
+    // ==========================================
+    // ⭐️ [신규 추가] 운영 설정(우천 휴장) 연동 로직
+    // ==========================================
+    
+    async function loadSettings() {
+        if (!settingDateInput || !settingLocationSelect) return;
+        const dateStr = settingDateInput.value;
+        const locStr = settingLocationSelect.value;
+        if (!dateStr || !locStr) return;
+
+        try {
+            const res = await fetch(`${SETTINGS_URL}?date=${dateStr}&location=${encodeURIComponent(locStr)}`);
+            const data = await res.json();
+            
+            if (res.ok && data.success) {
+                noticeActiveCheckbox.checked = data.is_notice_active;
+                slotCheckboxes.forEach(cb => {
+                    cb.checked = data.closed_slots.includes(cb.value);
+                });
+            } else {
+                // 데이터가 없으면 초기화
+                noticeActiveCheckbox.checked = false;
+                slotCheckboxes.forEach(cb => cb.checked = false);
+            }
+        } catch (error) {
+            console.error('설정 불러오기 실패:', error);
+        }
+    }
+
+    // 장소나 날짜를 변경할 때마다 설정 불러오기
+    if (settingDateInput) settingDateInput.addEventListener('change', loadSettings);
+    if (settingLocationSelect) settingLocationSelect.addEventListener('change', loadSettings);
+
+    // 설정 저장 버튼 클릭 시 API 전송
+    if (btnSaveSettings) {
+        btnSaveSettings.addEventListener('click', async () => {
+            const dateStr = settingDateInput.value;
+            const locStr = settingLocationSelect.value;
+            if (!dateStr) return alert('설정할 날짜를 먼저 선택해주세요!');
+            if (!locStr) return alert('설정할 장소를 선택해주세요!');
+
+            const isNoticeActive = noticeActiveCheckbox.checked;
+            const closedSlots = Array.from(slotCheckboxes)
+                                    .filter(cb => cb.checked)
+                                    .map(cb => cb.value);
+
+            btnSaveSettings.textContent = '저장 중...';
+            btnSaveSettings.disabled = true;
+
+            try {
+                const res = await fetch(SETTINGS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        target_date: dateStr,
+                        location: locStr,
+                        is_notice_active: isNoticeActive,
+                        closed_slots: closedSlots
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    alert(`[${locStr}] ${dateStr} 운영 설정이 성공적으로 저장되었습니다!`);
+                } else {
+                    alert('설정 저장에 실패했습니다.');
+                }
+            } catch (error) {
+                alert('네트워크 오류가 발생했습니다.');
+            } finally {
+                btnSaveSettings.textContent = '설정 저장';
+                btnSaveSettings.disabled = false;
+            }
+        });
+    }
+
     // ⭐️ 초기 데이터 로드 시 완벽 정렬 보장
     try {
         const response = await fetch(GET_URL);
         const data = await response.json();
         
-        // 서버에서 받아온 원본 데이터를 즉시 최신 날짜순으로 1차 정렬
         allReservations = sortReservations(data);
-        
-        // 정렬된 데이터를 바탕으로 필터 적용 및 화면 그리기
         applyFilters(); 
     } catch (error) {
         reservationList.innerHTML = '<tr><td colspan="6">데이터를 불러오는 데 실패했습니다.</td></tr>';
+    }
+
+    // 관리자 페이지 진입 시 오늘 날짜를 기본 세팅
+    if (settingDateInput) {
+        const today = new Date();
+        const offset = today.getTimezoneOffset() * 60000;
+        const dateLocal = (new Date(today - offset)).toISOString().split('T')[0];
+        settingDateInput.value = dateLocal;
+        loadSettings(); // 첫 로딩 시 오늘 설정값 불러오기
     }
 });
