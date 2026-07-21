@@ -224,9 +224,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bookedCount = bookedMap[slot] || 0;
                 const remainCount = rule.capacity - bookedCount; 
                 
-                // ⭐️ 마감 조건: 인원이 다 찼거나 OR 관리자가 닫아버렸거나
+                // ⭐️ [수정] 마감 조건: 유연한 텍스트 매칭 검사
                 const isCapacityFull = remainCount <= 0;
-                const isForceClosed = closedSlots.includes(slot);
+                
+                // 예: DB에는 "1회차" 라고 저장되어 있고, 현재 렌더링할 slot은 "1회차 (10:00~11:00)" 임
+                // slot 문자열 안에 DB에 저장된 closed 글자가 포함되어 있으면 차단 처리
+                let isForceClosed = false;
+                if (closedSlots && closedSlots.length > 0) {
+                    isForceClosed = closedSlots.some(closedItem => slot.includes(closedItem));
+                }
+
                 const isFull = isCapacityFull || isForceClosed;
 
                 const label = document.createElement('label');
@@ -343,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } else {
-                    alert(`예약 처리 중 오류가 발생했습니다: ${result.message || result.error || '알 수 없는 오류'}`);
+                    alert(`예약 처리 중 오류가 발생했습니다: \n${result.message || result.error || '알 수 없는 오류'}`);
                     submitBtn.textContent = '예약 신청하기';
                     submitBtn.disabled = false;
                 }
