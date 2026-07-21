@@ -23,6 +23,7 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         /* ⭐️ 요약(Summary) 박스 스타일 */
         .summary-box {
             display: flex;
@@ -58,6 +59,26 @@
         .btn-delete:hover {
             background-color: #c82333;
         }
+
+        /* ⭐️ [신규 추가] 운영 설정(우천 휴장) 패널 스타일 */
+        .settings-panel {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            color: #856404;
+        }
+        .settings-panel h3 { margin-top: 0; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .settings-row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
+        .settings-row label { font-weight: bold; cursor: pointer; }
+        .btn-save-settings {
+            background-color: #dc3545; color: white; border: none; 
+            padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer;
+            margin-left: auto;
+        }
+        .btn-save-settings:hover { background-color: #c82333; }
+        .checkbox-group { display: flex; gap: 15px; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -68,7 +89,48 @@
 
     <main class="admin-container">
         <h2>예약 내역 리스트</h2>
-        
+
+        <!-- ⭐️ [신규 추가] 우천 휴장 및 회차 마감 설정 패널 -->
+        <div class="settings-panel">
+            <h3>🚨 일일 운영 설정 (우천 및 긴급 휴장 관리)</h3>
+            
+            <div class="settings-row">
+                <div>
+                    <label for="settingLocation">설정 장소: </label>
+                    <select id="settingLocation" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; margin-left: 5px;">
+                        <option value="장소 1 (문원 체육공원)">장소 1 (문원 체육공원)</option>
+                        <option value="장소 2 (갈현동)">장소 2 (갈현동)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="settingDate">설정 날짜: </label>
+                    <input type="date" id="settingDate" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; margin-left: 5px;">
+                </div>
+                
+                <label style="display:flex; align-items:center; gap:5px; color:#dc3545;">
+                    <input type="checkbox" id="noticeActive" style="width:18px; height:18px;"> 
+                    <strong>메인 화면 우천 휴장 팝업 띄우기</strong>
+                </label>
+                
+                <button class="btn-save-settings" id="btnSaveSettings">설정 저장</button>
+            </div>
+
+            <div class="checkbox-group">
+                <span style="font-weight:bold; margin-right:5px; color:#333;">예약 차단 회차:</span>
+                <label><input type="checkbox" class="slot-checkbox" value="1회차"> 1회차</label>
+                <label><input type="checkbox" class="slot-checkbox" value="2회차"> 2회차</label>
+                <label><input type="checkbox" class="slot-checkbox" value="3회차"> 3회차</label>
+                <label><input type="checkbox" class="slot-checkbox" value="4회차"> 4회차</label>
+                <label><input type="checkbox" class="slot-checkbox" value="5회차"> 5회차</label>
+                <label><input type="checkbox" class="slot-checkbox" value="6회차"> 6회차</label>
+            </div>
+            
+            <p style="font-size:0.85rem; margin-top:10px; margin-bottom:0; color:#666;">
+                ※ 장소와 날짜를 선택하면 기존 설정이 불러와집니다. 설정을 변경한 후 반드시 [설정 저장]을 눌러주세요.
+            </p>
+        </div>
+
         <div class="search-area">
             <select id="filterLocation">
                 <option value="">모든 장소</option>
@@ -108,7 +170,7 @@
                     <th>예약자 정보</th>
                     <th>주소</th>
                     <th>인원</th>
-                    <th>상태관리</th> <!-- ⭐️ 타이틀 변경 -->
+                    <th>상태관리</th>
                 </tr>
             </thead>
             <tbody id="reservationList">
