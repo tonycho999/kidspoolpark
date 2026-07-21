@@ -23,174 +23,85 @@
             padding: 0 15px;   
             box-sizing: border-box;
         }
-        .top-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            width: 100%;
-        }
-        .top-row img {
-            width: 100%;
-            height: 350px; 
-            object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-        .bottom-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 15px;
-            width: 100%;
-        }
-        .bottom-row img {
-            width: 100%;
-            height: 250px; 
-            object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-        .gallery-wrapper img:hover {
-            transform: scale(1.02);
-            z-index: 1; 
-        }
-        /* ⭐️ 모바일 전용 줄바꿈 클래스 (기본적으로 display: none) */
-        .mobile-br {
-            display: none;
-        }
+        .top-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; }
+        .top-row img { width: 100%; height: 350px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+        .bottom-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; }
+        .bottom-row img { width: 100%; height: 250px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+        .gallery-wrapper img:hover { transform: scale(1.02); z-index: 1; }
+        
+        .mobile-br { display: none; }
         @media (max-width: 768px) {
-            .top-row, .bottom-row {
-                grid-template-columns: repeat(2, 1fr); 
-            }
-            .top-row img, .bottom-row img {
-                height: 200px;
-            }
-            .bottom-row img:last-child {
-                grid-column: span 2; 
-                height: 250px;
-            }
-            
-            /* ⭐️ 모바일 화면(768px 이하)일 때만 줄바꿈 작동 */
-            .mobile-br {
-                display: block;
-            }
+            .top-row, .bottom-row { grid-template-columns: repeat(2, 1fr); }
+            .top-row img, .bottom-row img { height: 200px; }
+            .bottom-row img:last-child { grid-column: span 2; height: 250px; }
+            .mobile-br { display: block; }
         }
-        /* ⭐️ 이벤트 팝업 스타일 (모바일 기본) */
-        #eventPopup {
+
+        /* ⭐️ 동적 다중 팝업 컨테이너 및 배경 설정 */
+        #popupOverlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); z-index: 9998;
+        }
+        
+        #popupContainer {
             display: none; 
-            position: fixed;
-            top: 50%;
-            left: 50%;
+            position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 400px; 
+            z-index: 9999;
+            pointer-events: none; /* 빈 공간 클릭 투과 */
+            width: 100%;
+        }
+
+        .dynamic-popup {
+            pointer-events: auto; /* 팝업 자체는 클릭 인식 */
             background-color: #fff;
             border-radius: 16px; 
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            z-index: 9999;
             overflow: hidden;
-            border: 4px solid #dc3545; /* 테두리를 붉은색으로 변경 */
+            display: flex; flex-direction: column;
         }
+
+        /* ⭐️ 장소별 구분 색상 테마 */
+        .theme-red { border: 4px solid #dc3545; }
+        .theme-red .popup-header { background-color: #dc3545; }
+        .theme-red .highlight-text { color: #dc3545; }
+
+        .theme-orange { border: 4px solid #fd7e14; }
+        .theme-orange .popup-header { background-color: #fd7e14; }
+        .theme-orange .highlight-text { color: #fd7e14; }
+
+        /* 팝업 내부 공통 요소 */
+        .popup-header { color: white; text-align: center; padding: 15px; font-size: 1.2rem; font-weight: bold; }
+        .popup-body { padding: 25px 20px; text-align: center; line-height: 1.7; }
+        .popup-body h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.2rem; color: #d9534f; }
+        .popup-body .highlight-text { margin: 10px 0; font-weight: bold; font-size: 1.1rem; }
+        .popup-body .desc-text { font-size: 0.95rem; color: #555; margin-top: 15px; font-weight: bold; }
         
-        #popupOverlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 9998;
-        }
-        .popup-header {
-            background-color: #dc3545; /* 헤더 배경색을 긴급 느낌의 붉은색으로 변경 */
-            color: white;
-            text-align: center;
-            padding: 15px;
-            font-size: 1.2rem; 
-            font-weight: bold;
-        }
-        .popup-body {
-            padding: 25px 20px;
-            text-align: center;
-            line-height: 1.7;
-        }
-        .popup-body h3 {
-            color: #d9534f;
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-        }
-        .popup-body p {
-            margin: 10px 0;
-            color: #333;
-            font-weight: bold;
-            font-size: 1.05rem;
-        }
-        .popup-body ul {
-            list-style: none;
-            padding: 0;
-            margin: 15px 0;
-            color: #0056b3;
-            font-weight: bold;
-            font-size: 1.15rem;
-        }
-        .popup-body ul li { margin-bottom: 8px; }
-        .popup-desc {
-            font-size: 0.95rem; 
-            color: #555; 
-            margin-top: 15px !important;
-            font-weight: bold;
-        }
-        .popup-footer {
-            background-color: #f8f9fa;
-            display: flex;
-            border-top: 1px solid #ddd;
-        }
-        .popup-btn {
-            padding: 15px;
-            border: none;
-            background: none;
-            font-size: 1.05rem;
-            cursor: pointer;
-            font-weight: bold;
-            color: #555;
-            transition: background-color 0.2s;
-        }
-        
-        .btn-today {
-            flex: 7; 
-            border-right: 1px solid #ddd;
-        }
-        
-        .btn-close {
-            flex: 3; 
-        }
+        .popup-footer { background-color: #f8f9fa; display: flex; border-top: 1px solid #ddd; }
+        .popup-btn { padding: 15px; border: none; background: none; font-size: 1.05rem; cursor: pointer; font-weight: bold; color: #555; transition: background-color 0.2s; }
+        .btn-today { flex: 7; border-right: 1px solid #ddd; }
+        .btn-close { flex: 3; }
         .popup-btn:hover { background-color: #e2e2e2; }
-        /* ⭐️ PC 화면용 팝업 확대 스타일 (화면이 768px 이상일 때 적용) */
+
+        /* ⭐️ PC 화면용: 팝업 2개면 양옆으로 나란히 배치 */
         @media (min-width: 769px) {
-            #eventPopup {
-                max-width: 500px; 
-                border-radius: 20px;
+            #popupContainer {
+                display: flex; gap: 20px; justify-content: center; align-items: center;
+                flex-direction: row; width: max-content;
             }
-            .popup-header {
-                padding: 20px;
-                font-size: 1.6rem; 
-            }
-            .popup-body {
-                padding: 40px 30px;
-            }
-            .popup-body h3 {
-                font-size: 1.5rem;
-            }
-            .popup-body p {
-                font-size: 1.3rem;
-            }
-            .popup-desc {
-                font-size: 1.1rem;
-                margin-top: 25px !important;
-            }
-            .popup-btn {
-                padding: 20px;
-                font-size: 1.2rem;
+            .dynamic-popup { width: 400px; }
+            .popup-header { padding: 20px; font-size: 1.4rem; }
+            .popup-body { padding: 30px 25px; }
+            .popup-btn { padding: 20px; font-size: 1.1rem; }
+        }
+
+        /* ⭐️ 모바일 화면용: 팝업 2개면 제자리 겹치기 (위의 것 닫으면 아래 보임) */
+        @media (max-width: 768px) {
+            #popupContainer { display: block; }
+            .dynamic-popup { 
+                position: absolute; top: 50%; left: 50%; 
+                transform: translate(-50%, -50%);
+                width: 90vw; max-width: 380px; 
             }
         }
     </style>
@@ -232,32 +143,9 @@
         </div>
     </main>
 
-    <!-- ⭐️ 우천 휴장 팝업창 HTML 구조 -->
+    <!-- ⭐️ 동적 팝업이 생성될 배경과 컨테이너 -->
     <div id="popupOverlay"></div>
-    <div id="eventPopup">
-        <div class="popup-header">
-            📢 긴급 안내 : 오전 우천 휴장
-        </div>
-        <div class="popup-body">
-            <h3>오늘 오전 야외 물놀이장 휴장</h3>
-            <p style="color: #dc3545;">현재 강우로 인하여 안전을 위해<br>오늘 오전 물놀이장 운영을 중단합니다.</p>
-            
-            <p style="margin-top: 15px; color: #0056b3; font-weight: bold; font-size: 1.1rem;">
-                오후 운영 여부는 날씨 상황을 지켜본 후<br class="mobile-br">
-                추후 다시 공지해 드릴 예정입니다.
-            </p>
-
-            <p style="margin-top: 15px; color: #555; font-weight: normal; font-size: 0.95rem;">
-                이용에 불편을 드려 대단히 죄송합니다.<br class="mobile-br">
-                안전한 시설 운영을 위한 조치이오니<br class="mobile-br">
-                시민 여러분의 너른 양해 부탁드립니다.
-            </p>
-        </div>
-        <div class="popup-footer">
-            <button class="popup-btn btn-today" onclick="closePopup('today')">오늘 하루 보지않기</button>
-            <button class="popup-btn btn-close" onclick="closePopup('close')">닫기</button>
-        </div>
-    </div>
+    <div id="popupContainer"></div>
 
     <footer>
         <div class="company-name">케이앤와이 주식회사 (KNY Company)</div>
@@ -274,15 +162,17 @@
 
     <script src="js/main.js"></script>
 
-    <!-- ⭐️ 팝업 제어 자바스크립트 -->
+    <!-- ⭐️ DB 연동 다중 팝업 제어 자바스크립트 -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const popup = document.getElementById('eventPopup');
+        document.addEventListener('DOMContentLoaded', async () => {
             const overlay = document.getElementById('popupOverlay');
-            
-            // ⭐️ 휴장 공지 활성화 스위치 (true: 켜기, false: 끄기)
-            // 나중에 공지를 내리실 때는 아래 true를 false로 바꿔주시면 됩니다.
-            const isNoticeActive = true; 
+            const container = document.getElementById('popupContainer');
+            const API_BASE = 'https://reservation-api.tonycho999.workers.dev';
+
+            // 오늘 날짜 계산 (KST 기준)
+            const now = new Date();
+            const offset = now.getTimezoneOffset() * 60000;
+            const todayStr = (new Date(now - offset)).toISOString().split('T')[0];
 
             function getCookie(name) {
                 let matches = document.cookie.match(new RegExp(
@@ -291,23 +181,105 @@
                 return matches ? decodeURIComponent(matches[1]) : undefined;
             }
 
-            // 공지가 켜져있고, '오늘 하루 보지않기' 쿠키가 없을 때만 팝업 표시
-            if (isNoticeActive && !getCookie('hideRainPopup')) {
-                popup.style.display = 'block';
-                overlay.style.display = 'block';
+            try {
+                // 두 장소의 오늘 설정 정보를 동시에 불러옴
+                const loc1 = '장소 1 (문원 체육공원)';
+                const loc2 = '장소 2 (갈현동)';
+
+                const [res1, res2] = await Promise.all([
+                    fetch(`${API_BASE}/api/settings?date=${todayStr}&location=${encodeURIComponent(loc1)}`).then(r => r.json()),
+                    fetch(`${API_BASE}/api/settings?date=${todayStr}&location=${encodeURIComponent(loc2)}`).then(r => r.json())
+                ]);
+
+                const popupsToRender = [];
+
+                // 장소 1 공지 렌더링 조건 확인 (쿠키 체크 포함)
+                if (res1.success && res1.is_notice_active && !getCookie('hidePopup_loc1')) {
+                    popupsToRender.push({ id: 'loc1', locName: '문원 체육공원', data: res1, theme: 'theme-red' });
+                }
+                // 장소 2 공지 렌더링 조건 확인 (쿠키 체크 포함)
+                if (res2.success && res2.is_notice_active && !getCookie('hidePopup_loc2')) {
+                    popupsToRender.push({ id: 'loc2', locName: '갈현동', data: res2, theme: 'theme-orange' });
+                }
+
+                // 팝업 생성
+                if (popupsToRender.length > 0) {
+                    overlay.style.display = 'block';
+                    container.style.display = window.innerWidth > 768 ? 'flex' : 'block';
+                    
+                    let htmlContent = '';
+                    popupsToRender.forEach((p, index) => {
+                        const closedSlots = p.data.closed_slots || [];
+                        let mainMsg = '';
+                        let subMsg = '';
+                        
+                        if (closedSlots.length > 0) {
+                            // ⭐️ 장소별 총 회차 수 판별
+                            const totalSlots = (p.id === 'loc1') ? 6 : 5;
+                            const slotNames = closedSlots.map(s => s.split(' ')[0]); // "1회차" 형태
+                            
+                            const isAllClosed = (closedSlots.length === totalSlots);
+                            const lastSlotName = (p.id === 'loc1') ? '6회차' : '5회차';
+                            const hasLastSlot = slotNames.includes(lastSlotName);
+
+                            if (isAllClosed) {
+                                mainMsg = `우천으로 인하여 오늘 하루 전체 휴장합니다.`;
+                            } else {
+                                mainMsg = `우천으로 인한 ${slotNames.join(', ')} 휴장입니다.`;
+                                // 마지막 회차를 선택하지 않은 경우(즉 1,2회차 등만 휴장인 경우)
+                                if (!hasLastSlot) {
+                                    subMsg = `<p style="margin-top: 15px; color: #0056b3; font-weight: bold; font-size: 1.05rem;">이후 회차 운영 여부는 날씨 상황을 지켜본 후<br class="mobile-br">추후 다시 공지해 드릴 예정입니다.</p>`;
+                                }
+                            }
+                        } else {
+                            mainMsg = `기상 악화로 인하여 물놀이장 운영 일정이<br class="mobile-br">변경될 수 있으니 참고 부탁드립니다.`;
+                        }
+
+                        // 모바일 겹치기 정렬을 위한 z-index
+                        htmlContent += `
+                            <div class="dynamic-popup ${p.theme}" id="popup_${p.id}" style="z-index: ${9999 + index}">
+                                <div class="popup-header">📢 긴급 안내 : ${p.locName}</div>
+                                <div class="popup-body">
+                                    <h3 style="color:inherit;">${p.locName} 휴장 안내</h3>
+                                    <p class="highlight-text">${mainMsg}</p>
+                                    ${subMsg}
+                                    <p class="desc-text">안전한 시설 운영을 위한 조치이오니<br class="mobile-br">시민 여러분의 양해 부탁드립니다.</p>
+                                </div>
+                                <div class="popup-footer">
+                                    <button class="popup-btn btn-today" onclick="closeDynamicPopup('${p.id}', 'today')">오늘 하루 보지않기</button>
+                                    <button class="popup-btn btn-close" onclick="closeDynamicPopup('${p.id}', 'close')">닫기</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = htmlContent;
+                }
+            } catch (error) {
+                console.error("공지 정보를 가져오는 데 실패했습니다.", error);
             }
 
-            window.closePopup = function(type) {
-                popup.style.display = 'none';
-                overlay.style.display = 'none';
+            // 닫기 버튼 전역 함수 선언
+            window.closeDynamicPopup = function(id, type) {
+                const popupEl = document.getElementById(`popup_${id}`);
+                if (popupEl) popupEl.style.display = 'none'; // 해당 팝업만 숨김
 
+                // 오늘 하루 보지않기 클릭 시에만 내일 자정까지 쿠키 생성
                 if (type === 'today') {
-                    // '오늘 하루 보지않기' 클릭 시 내일 자정까지 쿠키 저장
                     let tomorrow = new Date();
                     tomorrow.setHours(23, 59, 59, 999);
-                    document.cookie = "hideRainPopup=true; expires=" + tomorrow.toUTCString() + "; path=/";
+                    document.cookie = `hidePopup_${id}=true; expires=${tomorrow.toUTCString()}; path=/`;
                 }
-                // '닫기' 클릭 시에는 쿠키를 굽지 않으므로, 새로고침 시 다시 팝업이 뜹니다.
+
+                // 현재 화면에 남아있는 팝업이 있는지 검사
+                const visiblePopups = document.querySelectorAll('.dynamic-popup[style*="display: none"]');
+                const totalPopups = document.querySelectorAll('.dynamic-popup');
+                
+                // 만약 모든 팝업이 닫혔다면 배경(Overlay)과 컨테이너도 숨김
+                if (visiblePopups.length === totalPopups.length) {
+                    overlay.style.display = 'none';
+                    container.style.display = 'none';
+                }
             };
         });
     </script>
