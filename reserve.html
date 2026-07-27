@@ -12,6 +12,37 @@
             padding: 15px; font-weight: bold; font-size: 1.2rem;
             margin-bottom: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
+        /* ⭐️ 생존수영 팝업 스타일 추가 */
+        #survivalPopup {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); width: 90%; max-width: 400px; 
+            background-color: #fff; border-radius: 16px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 9999;
+            overflow: hidden; border: 4px solid #17a2b8; /* 물놀이 테마의 청록색 테두리 */
+        }
+        #popupOverlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 9998; }
+        .popup-header { background-color: #17a2b8; color: white; text-align: center; padding: 15px; font-size: 1.2rem; font-weight: bold; }
+        .popup-body { padding: 25px 20px; text-align: center; line-height: 1.7; }
+        .popup-body h3 { color: #0056b3; margin-top: 0; margin-bottom: 10px; font-size: 1.2rem; }
+        .popup-body p { margin: 10px 0; color: #333; font-weight: bold; font-size: 1.05rem; }
+        .popup-footer { background-color: #f8f9fa; display: flex; border-top: 1px solid #ddd; }
+        .popup-btn { padding: 15px; border: none; background: none; font-size: 1.05rem; cursor: pointer; font-weight: bold; color: #555; transition: background-color 0.2s; }
+        .btn-today { flex: 7; border-right: 1px solid #ddd; }
+        .btn-close { flex: 3; }
+        .popup-btn:hover { background-color: #e2e2e2; }
+        
+        .survival-list { list-style: none; padding: 0; margin: 15px 0; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; }
+        .survival-list li { margin-bottom: 15px; font-size: 0.95rem; }
+        .survival-list li:last-child { margin-bottom: 0; }
+        .survival-date { color: #d32f2f; font-weight: bold; font-size: 1.05rem; display: block; margin-bottom: 5px; }
+
+        @media (min-width: 769px) {
+            #survivalPopup { max-width: 450px; border-radius: 20px; }
+            .popup-header { padding: 20px; font-size: 1.4rem; }
+            .popup-body { padding: 30px 25px; }
+            .popup-btn { padding: 20px; font-size: 1.1rem; }
+        }
     </style>
 </head>
 <body>
@@ -129,6 +160,33 @@
         </div>
     </main>
 
+    <!-- ⭐️ 생존수영 안내 팝업창 HTML 구조 -->
+    <div id="popupOverlay"></div>
+    <div id="survivalPopup">
+        <div class="popup-header">
+            🏊‍♂️ 갈현동 주말 생존수영 안내
+        </div>
+        <div class="popup-body">
+            <ul class="survival-list">
+                <li>
+                    <span class="survival-date">⏰ 7/27(월) 오전 10시 예약 오픈</span>
+                    👉 8/1(토) 진행 (17:10~17:40)
+                </li>
+                <li>
+                    <span class="survival-date">⏰ 8/10(월) 오전 10시 예약 오픈</span>
+                    👉 8/15(토) 진행 (17:10~17:40)
+                </li>
+            </ul>
+            <p style="font-size: 0.95rem; color: #555; margin-top: 15px; font-weight: normal;">
+                ※ 생존수영 프로그램은 <strong>2인 가족, 선착순 5가족</strong>만 참여 가능합니다. (인원 변경 불가)
+            </p>
+        </div>
+        <div class="popup-footer">
+            <button class="popup-btn btn-today" onclick="closeSurvivalPopup('today')">오늘 하루 보지않기</button>
+            <button class="popup-btn btn-close" onclick="closeSurvivalPopup('close')">닫기</button>
+        </div>
+    </div>
+
     <footer>
         <div class="company-name">케이앤와이 주식회사 (KNY Company)</div>
         <div class="footer-info">
@@ -144,5 +202,37 @@
 
     <script src="js/main.js"></script>
     <script src="js/reserve.js"></script>
+    
+    <!-- ⭐️ 생존수영 팝업 제어 스크립트 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const popup = document.getElementById('survivalPopup');
+            const overlay = document.getElementById('popupOverlay');
+            
+            function getCookie(name) {
+                let matches = document.cookie.match(new RegExp(
+                    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+                ));
+                return matches ? decodeURIComponent(matches[1]) : undefined;
+            }
+
+            // '오늘 하루 보지않기' 쿠키가 없을 때만 팝업 표시
+            if (!getCookie('hideSurvivalPopupInfo')) {
+                popup.style.display = 'block';
+                overlay.style.display = 'block';
+            }
+
+            window.closeSurvivalPopup = function(type) {
+                popup.style.display = 'none';
+                overlay.style.display = 'none';
+
+                if (type === 'today') {
+                    let tomorrow = new Date();
+                    tomorrow.setHours(23, 59, 59, 999);
+                    document.cookie = "hideSurvivalPopupInfo=true; expires=" + tomorrow.toUTCString() + "; path=/";
+                }
+            };
+        });
+    </script>
 </body>
 </html>
