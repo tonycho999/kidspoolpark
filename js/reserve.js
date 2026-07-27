@@ -105,15 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
             else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
         } else if (selectedLocation === "장소 2 (갈현동)") {
-            // 생존수영 오픈일 예외 처리 적용
-            if (dateStr === "2026-08-01") openTimeISO = "2026-07-27T10:00:00"; 
-            else if (dateStr === "2026-08-15") openTimeISO = "2026-08-10T10:00:00";
-            else {
-                if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
-                else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
-                else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
-                else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
-            }
+            // ⭐️ 생존수영 날짜들도 일반 날짜(주차별 오픈) 규칙을 똑같이 따르도록 수정
+            if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
+            else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
+            else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
+            else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
         }
 
         if (!openTimeISO) return false;
@@ -229,15 +225,43 @@ document.addEventListener('DOMContentLoaded', () => {
             bookedData.forEach(item => { bookedMap[item.time_slot] = item.booked; });
             
             timeListContainer.innerHTML = ''; 
+
+            // 한국 시간 객체 생성 (생존수영 회차 오픈 비교용)
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Seoul',
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            });
+            const parts = formatter.formatToParts(new Date());
+            const kst = {};
+            parts.forEach(p => kst[p.type] = p.value);
+            const currentKst = new Date(kst.year, kst.month - 1, kst.day, kst.hour, kst.minute, kst.second);
             
             currentSlots.forEach(slot => {
                 const bookedCount = bookedMap[slot] || 0;
                 
-                // 생존수영인 경우 정원을 10명(5가족x2명)으로 세팅
                 let slotCapacity = currentCapacity;
                 let isSurvival = slot.includes("생존수영");
+                let isSurvivalNotOpened = false;
+                let survivalOpenText = '';
+
+                // ⭐️ [신규] 생존수영 회차만 개별적으로 오픈 시간 체크
                 if (isSurvival) {
-                    slotCapacity = 10; 
+                    slotCapacity = 10; // 정원 10명 (5가족)
+                    
+                    if (dateStr === "2026-08-01") {
+                        const target1 = new Date(2026, 6, 27, 10, 0, 0); // 7월 27일 오전 10시
+                        if (currentKst < target1) {
+                            isSurvivalNotOpened = true;
+                            survivalOpenText = '(7/27 10시 오픈)';
+                        }
+                    } else if (dateStr === "2026-08-15") {
+                        const target15 = new Date(2026, 7, 10, 10, 0, 0); // 8월 10일 오전 10시
+                        if (currentKst < target15) {
+                            isSurvivalNotOpened = true;
+                            survivalOpenText = '(8/10 10시 오픈)';
+                        }
+                    }
                 }
 
                 const remainCount = slotCapacity - bookedCount; 
@@ -248,18 +272,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     isForceClosed = closedSlots.some(closedItem => slot.includes(closedItem));
                 }
 
-                const isFull = isCapacityFull || isForceClosed;
+                // 마감 조건 합산: (인원초과) OR (우천차단) OR (아직생존수영오픈전)
+                const isFull = isCapacityFull || isForceClosed || isSurvivalNotOpened;
 
                 const label = document.createElement('label');
                 label.className = `time-item ${isFull ? 'disabled' : ''}`;
                 
                 let statusText = '';
-                if (isForceClosed) {
+                if (isSurvivalNotOpened) {
+                    statusText = survivalOpenText;
+                } else if (isForceClosed) {
                     statusText = '(기상악화로 마감)';
                 } else if (isCapacityFull) {
                     statusText = '(마감)';
                 } else {
-                    // ⭐️ 생존수영은 "팀" 대신 "가족"으로 표시 변경
                     if (isSurvival) {
                         statusText = `(잔여: ${Math.floor(remainCount/2)}가족 / 정원: 5가족)`;
                     } else {
