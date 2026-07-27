@@ -84,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 예약 가능 여부 체크 로직
     function isSelectable(dateStr, rule) {
-        // ⭐️ 7월 18일 우천 휴장 강제 차단 ⭐️
         if (dateStr === "2026-07-18") return false;
 
         const [y, m, d] = dateStr.split('-').map(Number);
@@ -106,13 +105,19 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
             else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
         } else if (selectedLocation === "장소 2 (갈현동)") {
-            if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
-            else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
-            else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
-            else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
+            // 생존수영 오픈일 예외 처리 적용
+            if (dateStr === "2026-08-01") openTimeISO = "2026-07-27T10:00:00"; 
+            else if (dateStr === "2026-08-15") openTimeISO = "2026-08-10T10:00:00";
+            else {
+                if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
+                else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
+                else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
+                else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
+            }
         }
 
         if (!openTimeISO) return false;
+
         const [oy, om, od] = openTimeISO.split('T')[0].split('-').map(Number);
         const [oh, omin, os] = openTimeISO.split('T')[1].split(':').map(Number);
         const openTime = new Date(oy, om - 1, od, oh, omin, os);
@@ -165,7 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         cell.classList.add('disabled');
                         
-                        // ⭐️ 7월 18일인 경우 안내 메시지 다르게 표시 ⭐️
                         if (dateStr === "2026-07-18") {
                             cell.title = '우천으로 인하여 휴장합니다 (예약 불가)';
                         } else {
@@ -190,7 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCalendar(currentYear, currentMonth);
     });
 
-    // ⭐️ [수정] 잔여인원 및 관리자 우천 마감 설정 로드
     async function handleDateClick(cell, dateStr) {
         document.querySelectorAll('#calendarBody td').forEach(td => td.classList.remove('selected'));
         cell.classList.add('selected');
@@ -201,8 +204,18 @@ document.addEventListener('DOMContentLoaded', () => {
         timeListContainer.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">데이터를 조회 중입니다...</p>';
         const rule = RULES[selectedLocation];
         
+        let currentCapacity = rule.capacity;
+        if (selectedLocation === "장소 2 (갈현동)" && dateStr >= "2026-07-29") {
+            currentCapacity = 150;
+        }
+        
+        // 날짜 클릭 시 해당 날짜의 전체 슬롯 배열 만들기
+        let currentSlots = [...rule.slots]; 
+        if (selectedLocation === "장소 2 (갈현동)" && (dateStr === "2026-08-01" || dateStr === "2026-08-15")) {
+            currentSlots.push("생존수영 (17:10~17:40)");
+        }
+        
         try {
-            // ⭐️ 잔여 인원과 우천 설정 상태를 동시에 가져옵니다.
             const [capacityRes, settingsRes] = await Promise.all([
                 fetch(`${API_BASE}/api/capacity?location=${encodeURIComponent(selectedLocation)}&date=${dateStr}`),
                 fetch(`${API_BASE}/api/settings?date=${dateStr}&location=${encodeURIComponent(selectedLocation)}`)
@@ -211,24 +224,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const bookedData = await capacityRes.json();
             const settingsData = await settingsRes.json();
             
-            // ⭐️ 닫힌 회차 목록 가져오기
             const closedSlots = settingsData.success ? settingsData.closed_slots : [];
-
             const bookedMap = {};
-            bookedData.forEach(item => {
-                bookedMap[item.time_slot] = item.booked;
-            });
+            bookedData.forEach(item => { bookedMap[item.time_slot] = item.booked; });
+            
             timeListContainer.innerHTML = ''; 
             
-            rule.slots.forEach(slot => {
+            currentSlots.forEach(slot => {
                 const bookedCount = bookedMap[slot] || 0;
-                const remainCount = rule.capacity - bookedCount; 
                 
-                // ⭐️ [수정] 마감 조건: 유연한 텍스트 매칭 검사
+                // 생존수영인 경우 정원을 10명(5가족x2명)으로 세팅
+                let slotCapacity = currentCapacity;
+                let isSurvival = slot.includes("생존수영");
+                if (isSurvival) {
+                    slotCapacity = 10; 
+                }
+
+                const remainCount = slotCapacity - bookedCount; 
                 const isCapacityFull = remainCount <= 0;
                 
-                // 예: DB에는 "1회차" 라고 저장되어 있고, 현재 렌더링할 slot은 "1회차 (10:00~11:00)" 임
-                // slot 문자열 안에 DB에 저장된 closed 글자가 포함되어 있으면 차단 처리
                 let isForceClosed = false;
                 if (closedSlots && closedSlots.length > 0) {
                     isForceClosed = closedSlots.some(closedItem => slot.includes(closedItem));
@@ -245,7 +259,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (isCapacityFull) {
                     statusText = '(마감)';
                 } else {
-                    statusText = `(잔여: ${remainCount}명 / 정원: ${rule.capacity}명)`;
+                    // ⭐️ 생존수영은 "팀" 대신 "가족"으로 표시 변경
+                    if (isSurvival) {
+                        statusText = `(잔여: ${Math.floor(remainCount/2)}가족 / 정원: 5가족)`;
+                    } else {
+                        statusText = `(잔여: ${remainCount}명 / 정원: ${slotCapacity}명)`;
+                    }
                 }
                 
                 label.innerHTML = `
@@ -272,12 +291,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnPlus = document.getElementById('btnPlus');
     const peopleInput = document.getElementById('people');
 
+    // 시간(회차) 선택 시 인원수 2명 강제 고정 로직
+    timeListContainer.addEventListener('change', (e) => {
+        if (e.target.name === 'timeSlot') {
+            if (e.target.value.includes('생존수영')) {
+                peopleInput.value = 2; // 무조건 2명으로 변경
+            } else {
+                if(parseInt(peopleInput.value) > 4) peopleInput.value = 4;
+                if(parseInt(peopleInput.value) < 1) peopleInput.value = 1;
+            }
+        }
+    });
+
     if(btnMinus && btnPlus) {
         btnMinus.addEventListener('click', () => { 
+            const timeSlot = document.querySelector('input[name="timeSlot"]:checked');
+            if (timeSlot && timeSlot.value.includes('생존수영')) {
+                alert('생존수영 프로그램은 2인 고정으로 인원을 변경할 수 없습니다.');
+                return;
+            }
             let val = parseInt(peopleInput.value); 
             if (val > 1) peopleInput.value = val - 1; 
         });
         btnPlus.addEventListener('click', () => { 
+            const timeSlot = document.querySelector('input[name="timeSlot"]:checked');
+            if (timeSlot && timeSlot.value.includes('생존수영')) {
+                alert('생존수영 프로그램은 2인 고정으로 인원을 변경할 수 없습니다.');
+                return;
+            }
             let val = parseInt(peopleInput.value); 
             if (val < 4) peopleInput.value = val + 1; 
         });
@@ -291,6 +332,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const timeSlot = document.querySelector('input[name="timeSlot"]:checked');
             if (!timeSlot) return alert('예약 시간을 선택해주세요.');
             
+            // 생존수영인 경우 전송 직전 다시 한 번 검증
+            if (timeSlot.value.includes('생존수영') && parseInt(peopleInput.value) !== 2) {
+                alert('생존수영 프로그램은 2인 고정입니다.');
+                peopleInput.value = 2;
+                return;
+            }
+
             const address1 = document.getElementById('address1').value;
             if (!address1.includes('과천')) {
                 alert('죄송합니다. 과천 물놀이장은 과천 시민만 예약이 가능합니다.\n올바른 과천시 주소를 입력해 주세요.');
