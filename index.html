@@ -70,6 +70,11 @@
         .theme-orange .popup-header { background-color: #fd7e14; }
         .theme-orange .highlight-text { color: #fd7e14; }
 
+        /* ⭐️ 수영모 팝업 전용 파란색 테마 */
+        .theme-blue { border: 4px solid #0056b3; }
+        .theme-blue .popup-header { background-color: #0056b3; }
+        .theme-blue .highlight-text { color: #0056b3; font-size: 1.15rem; margin-top: 15px;}
+
         /* 팝업 내부 공통 요소 */
         .popup-header { color: white; text-align: center; padding: 15px; font-size: 1.2rem; font-weight: bold; }
         .popup-body { padding: 25px 20px; text-align: center; line-height: 1.7; }
@@ -83,7 +88,7 @@
         .btn-close { flex: 3; }
         .popup-btn:hover { background-color: #e2e2e2; }
 
-        /* ⭐️ PC 화면용: 팝업 2개면 양옆으로 나란히 배치 */
+        /* ⭐️ PC 화면용: 팝업 여러 개면 양옆으로 나란히 배치 */
         @media (min-width: 769px) {
             #popupContainer {
                 display: flex; gap: 20px; justify-content: center; align-items: center;
@@ -95,7 +100,7 @@
             .popup-btn { padding: 20px; font-size: 1.1rem; }
         }
 
-        /* ⭐️ 모바일 화면용: 팝업 2개면 제자리 겹치기 (위의 것 닫으면 아래 보임) */
+        /* ⭐️ 모바일 화면용: 팝업 제자리 겹치기 (위의 것 닫으면 아래 보임) */
         @media (max-width: 768px) {
             #popupContainer { display: block; }
             .dynamic-popup { 
@@ -144,7 +149,7 @@
             </div>
         </div>
 
-        <!-- ⭐️ 장소 2: 갈현동 물놀이장 갤러리 (신규 추가) -->
+        <!-- ⭐️ 장소 2: 갈현동 물놀이장 갤러리 -->
         <h2 style="text-align: center; margin-top: 3.5rem; margin-bottom: 1.5rem; color: #fd7e14;">📍 장소 2 : 갈현동 물놀이장</h2>
         <div class="gallery-wrapper" style="margin-bottom: 3rem;">
             <div class="top-row">
@@ -160,7 +165,24 @@
         </div>
     </main>
 
-    <!-- ⭐️ 동적 팝업이 생성될 배경과 컨테이너 -->
+    <!-- ⭐️ 수영모 착용 필수 안내 팝업 (기본 노출 세팅) -->
+    <div id="capPopupOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 9996;"></div>
+    <div id="capPopupContainer" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9997;">
+        <div class="dynamic-popup theme-blue" id="popup_swimcap">
+            <div class="popup-header">📢 수영장 입장 필수 안내</div>
+            <div class="popup-body">
+                <h3 style="color:#0056b3;">모든 입장객 수영모 착용 필수</h3>
+                <p style="color:#d9534f; font-weight:bold; margin-top: 15px;">아이들은 물론, 함께 풀장(메인 수영장)에 들어가시는 <br class="mobile-br"><span style="text-decoration: underline;">부모님(보호자)도 반드시 수영모(캡모자 가능)를 착용</span>하셔야 합니다.</p>
+                <p class="desc-text" style="margin-top: 20px;">수영모 미착용 시 입장이 제한될 수 있으니<br class="mobile-br">안전하고 청결한 이용을 위해 꼭 협조 부탁드립니다.</p>
+            </div>
+            <div class="popup-footer">
+                <button class="popup-btn btn-today" onclick="closeCapPopup('today')">오늘 하루 보지않기</button>
+                <button class="popup-btn btn-close" onclick="closeCapPopup('close')">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⭐️ 동적 팝업(우천 등)이 생성될 배경과 컨테이너 -->
     <div id="popupOverlay"></div>
     <div id="popupContainer"></div>
 
@@ -184,6 +206,10 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const overlay = document.getElementById('popupOverlay');
             const container = document.getElementById('popupContainer');
+            
+            const capOverlay = document.getElementById('capPopupOverlay');
+            const capContainer = document.getElementById('capPopupContainer');
+
             const API_BASE = 'https://reservation-api.tonycho999.workers.dev';
 
             // 오늘 날짜 계산 (KST 기준)
@@ -198,6 +224,27 @@
                 return matches ? decodeURIComponent(matches[1]) : undefined;
             }
 
+            // ==========================================
+            // ⭐️ 1. 수영모 필수 팝업 로직 (기본)
+            // ==========================================
+            if (!getCookie('hidePopup_swimcap')) {
+                capOverlay.style.display = 'block';
+                capContainer.style.display = 'block';
+            }
+
+            window.closeCapPopup = function(type) {
+                capOverlay.style.display = 'none';
+                capContainer.style.display = 'none';
+                if (type === 'today') {
+                    let tomorrow = new Date();
+                    tomorrow.setHours(23, 59, 59, 999);
+                    document.cookie = `hidePopup_swimcap=true; expires=${tomorrow.toUTCString()}; path=/`;
+                }
+            };
+
+            // ==========================================
+            // ⭐️ 2. 우천 휴장 팝업 로직 (DB 연동)
+            // ==========================================
             try {
                 // 두 장소의 오늘 설정 정보를 동시에 불러옴
                 const loc1 = '장소 1 (문원 체육공원)';
@@ -231,7 +278,7 @@
                         let subMsg = '';
                         
                         if (closedSlots.length > 0) {
-                            // ⭐️ 장소별 총 회차 수 판별
+                            // 장소별 총 회차 수 판별
                             const totalSlots = (p.id === 'loc1') ? 6 : 5;
                             const slotNames = closedSlots.map(s => s.split(' ')[0]); // "1회차" 형태
                             
