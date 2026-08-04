@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const API_BASE = 'https://reservation-api.tonycho999.workers.dev';
     let currentYear = 2026;
-    let currentMonth = 7;
+    let currentMonth = 8;
     
     let selectedLocation = document.querySelector('input[name="locationSelect"]:checked')?.value;
     if (!selectedLocation || !RULES[selectedLocation]) {
