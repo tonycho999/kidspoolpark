@@ -413,8 +413,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // ⭐️ [수정된 부분] 장소명을 직관적으로 (문원, 갈현) 변환하여 출력
                     let shortLocationName = "과천 물놀이장";
-                    if (selectedLocation.includes("장소 1")) shortLocationName = "문원 체육공원";
-                    else if (selectedLocation.includes("장소 2")) shortLocationName = "갈현동";
+                    if (selectedLocation.includes("장소 1 (문원 체육공원)")) shortLocationName = "문원";
+                    else if (selectedLocation.includes("장소 2 (갈현동)")) shortLocationName = "갈현";
 
                     formContainer.innerHTML = `
                         <div style="text-align: center; padding: 1.5rem 0;">
