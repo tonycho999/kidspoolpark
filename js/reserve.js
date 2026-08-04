@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
             else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
         } else if (selectedLocation === "장소 2 (갈현동)") {
-            // ⭐️ 생존수영 날짜들도 일반 날짜(주차별 오픈) 규칙을 똑같이 따르도록 수정
+            // 생존수영 날짜들도 일반 날짜(주차별 오픈) 규칙을 똑같이 따르도록 수정
             if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
             else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCalendar(currentYear, currentMonth);
     });
 
-    // ⭐️ [수정] 잔여인원 및 관리자 우천 마감 설정 로드
+    // ⭐️ 잔여인원 및 관리자 우천 마감 설정 로드
     async function handleDateClick(cell, dateStr) {
         document.querySelectorAll('#calendarBody td').forEach(td => td.classList.remove('selected'));
         cell.classList.add('selected');
@@ -223,13 +223,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const settingsData = await settingsRes.json();
             
             const closedSlots = settingsData.success ? settingsData.closed_slots : [];
-
             const bookedMap = {};
-            bookedData.forEach(item => {
-                bookedMap[item.time_slot] = item.booked;
-            });
-            timeListContainer.innerHTML = ''; 
+            bookedData.forEach(item => { bookedMap[item.time_slot] = item.booked; });
             
+            timeListContainer.innerHTML = ''; 
+
             // 한국 시간 객체 생성 (생존수영 회차 오픈 비교용)
             const formatter = new Intl.DateTimeFormat('en-US', {
                 timeZone: 'Asia/Seoul',
@@ -249,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let isSurvivalNotOpened = false;
                 let survivalOpenText = '';
 
-                // ⭐️ [신규] 생존수영 회차만 개별적으로 오픈 시간 체크
+                // ⭐️ 생존수영 회차만 개별적으로 오픈 시간 체크
                 if (isSurvival) {
                     slotCapacity = 10; // 정원 10명 (5가족)
                     
@@ -362,6 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const timeSlot = document.querySelector('input[name="timeSlot"]:checked');
             if (!timeSlot) return alert('예약 시간을 선택해주세요.');
             
+            // 생존수영인 경우 전송 직전 다시 한 번 검증
             if (timeSlot.value.includes('생존수영') && parseInt(peopleInput.value) !== 2) {
                 alert('생존수영 프로그램은 2인 고정입니다.');
                 peopleInput.value = 2;
@@ -418,7 +417,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         shortLocationName = "갈현";
                     }
 
-                    // ⭐️ 렌더링 코드: ${shortLocationName} 이 그대로 들어감! (.split 같은거 없음)
                     formContainer.innerHTML = `
                         <div style="text-align: center; padding: 1.5rem 0;">
                             <div id="ticketArea" style="background: #fff; padding: 2rem 1rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #0056b3; margin: 0 auto 1.5rem auto; width: 100%; max-width: 350px;">
@@ -493,7 +491,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+});
 
+// 전역 범위로 분리
 function execDaumPostcode() {
     new daum.Postcode({
         oncomplete: function(data) {
