@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
             else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
         } else if (selectedLocation === "장소 2 (갈현동)") {
-            // 생존수영 날짜들도 일반 날짜(주차별 오픈) 규칙을 똑같이 따르도록 수정
+            // ⭐️ 생존수영 날짜들도 일반 날짜(주차별 오픈) 규칙을 똑같이 따르도록 수정
             if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
             else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
@@ -185,11 +185,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentMonth === 1) { currentMonth = 12; currentYear--; } else { currentMonth--; }
         renderCalendar(currentYear, currentMonth);
     });
+
     document.getElementById('nextMonth').addEventListener('click', () => {
         if (currentMonth === 12) { currentMonth = 1; currentYear++; } else { currentMonth++; }
         renderCalendar(currentYear, currentMonth);
     });
 
+    // ⭐️ [수정] 잔여인원 및 관리자 우천 마감 설정 로드
     async function handleDateClick(cell, dateStr) {
         document.querySelectorAll('#calendarBody td').forEach(td => td.classList.remove('selected'));
         cell.classList.add('selected');
@@ -221,11 +223,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const settingsData = await settingsRes.json();
             
             const closedSlots = settingsData.success ? settingsData.closed_slots : [];
-            const bookedMap = {};
-            bookedData.forEach(item => { bookedMap[item.time_slot] = item.booked; });
-            
-            timeListContainer.innerHTML = ''; 
 
+            const bookedMap = {};
+            bookedData.forEach(item => {
+                bookedMap[item.time_slot] = item.booked;
+            });
+            timeListContainer.innerHTML = ''; 
+            
             // 한국 시간 객체 생성 (생존수영 회차 오픈 비교용)
             const formatter = new Intl.DateTimeFormat('en-US', {
                 timeZone: 'Asia/Seoul',
@@ -236,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const kst = {};
             parts.forEach(p => kst[p.type] = p.value);
             const currentKst = new Date(kst.year, kst.month - 1, kst.day, kst.hour, kst.minute, kst.second);
-            
+
             currentSlots.forEach(slot => {
                 const bookedCount = bookedMap[slot] || 0;
                 
@@ -245,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let isSurvivalNotOpened = false;
                 let survivalOpenText = '';
 
-                // 생존수영 회차만 개별적으로 오픈 시간 체크
+                // ⭐️ [신규] 생존수영 회차만 개별적으로 오픈 시간 체크
                 if (isSurvival) {
                     slotCapacity = 10; // 정원 10명 (5가족)
                     
@@ -272,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     isForceClosed = closedSlots.some(closedItem => slot.includes(closedItem));
                 }
 
+                // 마감 조건 합산: (인원초과) OR (우천차단) OR (아직생존수영오픈전)
                 const isFull = isCapacityFull || isForceClosed || isSurvivalNotOpened;
 
                 const label = document.createElement('label');
@@ -316,10 +321,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnPlus = document.getElementById('btnPlus');
     const peopleInput = document.getElementById('people');
 
+    // 시간(회차) 선택 시 인원수 2명 강제 고정 로직
     timeListContainer.addEventListener('change', (e) => {
         if (e.target.name === 'timeSlot') {
             if (e.target.value.includes('생존수영')) {
-                peopleInput.value = 2; 
+                peopleInput.value = 2; // 무조건 2명으로 변경
             } else {
                 if(parseInt(peopleInput.value) > 4) peopleInput.value = 4;
                 if(parseInt(peopleInput.value) < 1) peopleInput.value = 1;
@@ -356,6 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const timeSlot = document.querySelector('input[name="timeSlot"]:checked');
             if (!timeSlot) return alert('예약 시간을 선택해주세요.');
             
+            // 생존수영인 경우 전송 직전 다시 한 번 검증
             if (timeSlot.value.includes('생존수영') && parseInt(peopleInput.value) !== 2) {
                 alert('생존수영 프로그램은 2인 고정입니다.');
                 peopleInput.value = 2;
@@ -404,7 +411,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok && result.success) {
                     const formContainer = reserveForm.parentElement;
                     
-                    // ⭐️ [수정된 부분] 예약 완료 시 티켓 형태의 상세 정보 및 스크린샷 렌더링
+                    // ⭐️ [수정된 부분] 장소명을 직관적으로 (문원, 갈현) 변환하여 출력
+                    let shortLocationName = "과천 물놀이장";
+                    if (selectedLocation.includes("장소 1")) shortLocationName = "문원 체육공원";
+                    else if (selectedLocation.includes("장소 2")) shortLocationName = "갈현동";
+
                     formContainer.innerHTML = `
                         <div style="text-align: center; padding: 1.5rem 0;">
                             <div id="ticketArea" style="background: #fff; padding: 2rem 1rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #0056b3; margin: 0 auto 1.5rem auto; width: 100%; max-width: 350px;">
@@ -413,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 
                                 <div style="text-align: left; padding: 0 10px;">
                                     <div style="margin-bottom: 12px; font-size: 1.05rem; display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
-                                        <strong style="color:#555;">📍 예약 장소</strong> <span style="font-weight:bold; color:#0056b3;">${selectedLocation.split(' ')[0]}</span>
+                                        <strong style="color:#555;">📍 예약 장소</strong> <span style="font-weight:bold; color:#0056b3;">${shortLocationName}</span>
                                     </div>
                                     <div style="margin-bottom: 12px; font-size: 1.05rem; display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
                                         <strong style="color:#555;">📅 예약 날짜</strong> <span style="font-weight:bold;">${hiddenDateInput.value}</span>
@@ -432,7 +443,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </div>
                             </div>
                             
-                            <!-- ⭐️ 스크린샷 캡처 버튼 -->
                             <button type="button" id="btnScreenshot" class="btn-black" style="padding: 15px 20px; font-size: 1.1rem; cursor: pointer; width: 100%; max-width: 350px; margin: 0 auto;">
                                 📸 화면 스크린샷 저장하기
                             </button>
@@ -440,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                    // html2canvas 라이브러리를 동적으로 로드하여 캡처 기능 실행
+                    // 스크린샷 캡처 로직
                     const script = document.createElement('script');
                     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
                     script.onload = () => {
@@ -453,12 +463,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             
                             html2canvas(targetEl, { scale: 2 }).then(canvas => {
                                 const link = document.createElement('a');
-                                link.download = `과천물놀이_${hiddenDateInput.value}.png`;
+                                link.download = `과천물놀이_${shortLocationName}_${hiddenDateInput.value}.png`;
                                 link.href = canvas.toDataURL('image/png');
                                 link.click();
                                 
                                 alert('예약 티켓이 사진첩(갤러리/다운로드 폴더)에 저장되었습니다.\n처음 화면으로 돌아갑니다.');
-                                location.reload(); // 알림 후 자동 새로고침(초기화)
+                                location.reload(); 
                             }).catch(err => {
                                 alert('스크린샷 저장 중 오류가 발생했습니다. 직접 화면을 캡처해 주세요.');
                                 btn.textContent = '📸 화면 스크린샷 저장하기';
