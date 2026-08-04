@@ -3,9 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- ⭐️ 캐시 방지 메타 태그 추가 (HTML 자체가 폰에 저장되는 것 방지) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <title>과천 물놀이 예약하기</title>
-    <link rel="stylesheet" href="css/style.css">
+
+    <!-- ⭐️ CSS 파일에 버전(?v=20260804_01) 추가 -->
+    <link rel="stylesheet" href="css/style.css?v=20260804_01">
+    
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
     <style>
         .test-banner {
             background-color: #dc3545; color: white; text-align: center;
@@ -36,7 +46,7 @@
         .survival-list li { margin-bottom: 15px; font-size: 0.95rem; }
         .survival-list li:last-child { margin-bottom: 0; }
         .survival-date { color: #d32f2f; font-weight: bold; font-size: 1.05rem; display: block; margin-bottom: 5px; }
-
+        
         @media (min-width: 769px) {
             #survivalPopup { max-width: 450px; border-radius: 20px; }
             .popup-header { padding: 20px; font-size: 1.4rem; }
@@ -90,10 +100,12 @@
                 </table>
                 <p class="step-desc">원하시는 날짜를 선택하세요.</p>
             </div>
+            
             <div class="step-box">
                 <div class="step-title" id="selectedDateDisplay">날짜를 먼저 선택해주세요</div>
                 <div class="time-list" id="timeList"></div>
             </div>
+            
             <div class="step-box">
                 <div class="step-title">예약자 정보</div>
                 <p class="step-desc" style="text-align: right; font-size: 0.8rem;">보호자 1인 ~ 4인 예약 가능</p>
@@ -112,6 +124,7 @@
                             <input type="text" id="email2" style="width:50%" required>
                         </div>
                     </div>
+                    
                     <div class="form-row">
                         <label>연락처 *</label>
                         <div class="flex-row">
@@ -120,6 +133,7 @@
                             <input type="text" id="phone3" style="width:30%" maxlength="4" required>
                         </div>
                     </div>
+                    
                     <div class="form-row">
                         <label>생년월일 *</label>
                         <div class="flex-row">
@@ -128,6 +142,7 @@
                             <input type="number" id="birthDay" placeholder="DD" style="width:25%" required> 일
                         </div>
                     </div>
+                    
                     <div class="form-row">
                         <label>주소 *</label>
                         <div class="flex-row" style="margin-bottom: 5px;">
@@ -138,6 +153,7 @@
                         <input type="text" id="address2" placeholder="상세주소" style="width:100%;" required>
                         <p style="color: #dc3545; font-size: 0.85rem; margin-top: 5px; margin-bottom: 0;">*과천시민 확인용 주소를 넣어주세요</p>
                     </div>
+                    
                     <div class="form-row">
                         <label>인원 *</label>
                         <div class="counter-box">
@@ -146,6 +162,7 @@
                             <button type="button" id="btnPlus">+</button>
                         </div>
                     </div>
+                    
                     <div class="privacy-box">
                         <strong>개인정보 수집 및 이용 안내</strong>
                         <p>- 수집항목: 성명, 이메일, 연락처, 생년월일, 주소</p>
@@ -154,6 +171,7 @@
                             <input type="checkbox" id="privacyAgree" required> (필수) 개인정보 수집 및 이용에 동의합니다.
                         </label>
                     </div>
+                    
                     <button type="submit" class="submit-btn" style="margin-top: 1rem;">예약 신청하기</button>
                 </form>
             </div>
@@ -200,8 +218,9 @@
         <div>&copy; 2026 KNY Company. All Rights Reserved.</div>
     </footer>
 
-    <script src="js/main.js"></script>
-    <script src="js/reserve.js"></script>
+    <!-- ⭐️ JS 파일에 버전(?v=20260804_01) 추가 -->
+    <script src="js/main.js?v=20260804_01"></script>
+    <script src="js/reserve.js?v=20260804_01"></script>
     
     <!-- ⭐️ 생존수영 팝업 제어 스크립트 -->
     <script>
@@ -225,7 +244,6 @@
             window.closeSurvivalPopup = function(type) {
                 popup.style.display = 'none';
                 overlay.style.display = 'none';
-
                 if (type === 'today') {
                     let tomorrow = new Date();
                     tomorrow.setHours(23, 59, 59, 999);
