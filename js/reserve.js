@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
             else if (dateStr >= "2026-08-10" && dateStr <= "2026-08-17") openTimeISO = "2026-08-03T10:00:00";
         } else if (selectedLocation === "장소 2 (갈현동)") {
-            // ⭐️ 생존수영 날짜들도 일반 날짜(주차별 오픈) 규칙을 똑같이 따르도록 수정
+            // 생존수영 날짜들도 일반 날짜(주차별 오픈) 규칙을 똑같이 따르도록 수정
             if (dateStr >= "2026-07-25" && dateStr <= "2026-07-26") openTimeISO = "2026-07-13T10:00:00";
             else if (dateStr >= "2026-07-27" && dateStr <= "2026-08-02") openTimeISO = "2026-07-20T10:00:00";
             else if (dateStr >= "2026-08-03" && dateStr <= "2026-08-09") openTimeISO = "2026-07-27T10:00:00";
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let isSurvivalNotOpened = false;
                 let survivalOpenText = '';
 
-                // ⭐️ [신규] 생존수영 회차만 개별적으로 오픈 시간 체크
+                // 생존수영 회차만 개별적으로 오픈 시간 체크
                 if (isSurvival) {
                     slotCapacity = 10; // 정원 10명 (5가족)
                     
@@ -272,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     isForceClosed = closedSlots.some(closedItem => slot.includes(closedItem));
                 }
 
-                // 마감 조건 합산: (인원초과) OR (우천차단) OR (아직생존수영오픈전)
                 const isFull = isCapacityFull || isForceClosed || isSurvivalNotOpened;
 
                 const label = document.createElement('label');
@@ -317,11 +316,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnPlus = document.getElementById('btnPlus');
     const peopleInput = document.getElementById('people');
 
-    // 시간(회차) 선택 시 인원수 2명 강제 고정 로직
     timeListContainer.addEventListener('change', (e) => {
         if (e.target.name === 'timeSlot') {
             if (e.target.value.includes('생존수영')) {
-                peopleInput.value = 2; // 무조건 2명으로 변경
+                peopleInput.value = 2; 
             } else {
                 if(parseInt(peopleInput.value) > 4) peopleInput.value = 4;
                 if(parseInt(peopleInput.value) < 1) peopleInput.value = 1;
@@ -358,7 +356,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const timeSlot = document.querySelector('input[name="timeSlot"]:checked');
             if (!timeSlot) return alert('예약 시간을 선택해주세요.');
             
-            // 생존수영인 경우 전송 직전 다시 한 번 검증
             if (timeSlot.value.includes('생존수영') && parseInt(peopleInput.value) !== 2) {
                 alert('생존수영 프로그램은 2인 고정입니다.');
                 peopleInput.value = 2;
@@ -406,23 +403,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (response.ok && result.success) {
                     const formContainer = reserveForm.parentElement;
+                    
+                    // ⭐️ [수정된 부분] 예약 완료 시 티켓 형태의 상세 정보 및 스크린샷 렌더링
                     formContainer.innerHTML = `
-                        <div style="text-align: center; padding: 2rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #ddd; margin-top: 1rem;">
-                            <h3 style="color: #28a745; margin-bottom: 1rem;">🎉 예약이 성공적으로 접수되었습니다!</h3>
-                            <p style="color: #666; margin-bottom: 1rem;">추후 예약 조회/취소 시 필요하오니 아래 예약 번호를 반드시 복사해 두세요.</p>
-                            
-                            <div style="margin: 1.5rem auto; padding: 1rem; background: #fff; border: 2px dashed #0056b3; font-size: 1.8rem; font-weight: bold; color: #0056b3; width: 80%; letter-spacing: 2px;">
-                                ${result.reservation_code}
+                        <div style="text-align: center; padding: 1.5rem 0;">
+                            <div id="ticketArea" style="background: #fff; padding: 2rem 1rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #0056b3; margin: 0 auto 1.5rem auto; width: 100%; max-width: 350px;">
+                                <h3 style="color: #28a745; margin-top: 0; margin-bottom: 1rem;">🎉 예약 완료</h3>
+                                <p style="color: #666; margin-bottom: 1.5rem; font-size: 0.95rem; word-break: keep-all;">입장 시 본 화면을 보여주세요.</p>
+                                
+                                <div style="text-align: left; padding: 0 10px;">
+                                    <div style="margin-bottom: 12px; font-size: 1.05rem; display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                                        <strong style="color:#555;">📍 예약 장소</strong> <span style="font-weight:bold; color:#0056b3;">${selectedLocation.split(' ')[0]}</span>
+                                    </div>
+                                    <div style="margin-bottom: 12px; font-size: 1.05rem; display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                                        <strong style="color:#555;">📅 예약 날짜</strong> <span style="font-weight:bold;">${hiddenDateInput.value}</span>
+                                    </div>
+                                    <div style="margin-bottom: 12px; font-size: 1.05rem; display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                                        <strong style="color:#555;">⏰ 예약 회차</strong> <span style="font-weight:bold; color:#0056b3;">${timeSlot.value.split(' ')[0]}</span>
+                                    </div>
+                                    <div style="margin-bottom: 12px; font-size: 1.05rem; display: flex; justify-content: space-between;">
+                                        <strong style="color:#555;">👨‍👩‍👧‍👦 예약 인원</strong> <span style="font-weight:bold;">${peopleInput.value}명</span>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top: 15px; padding-top: 15px; border-top: 2px dashed #0056b3; text-align: center;">
+                                    <span style="font-size: 0.9rem; color: #888; display: block; margin-bottom: 5px;">예약 번호</span>
+                                    <span style="display: inline-block; font-size: 1.8rem; font-weight: bold; color: #0056b3; letter-spacing: 2px; font-family: monospace;">${result.reservation_code}</span>
+                                </div>
                             </div>
                             
-                            <button type="button" onclick="navigator.clipboard.writeText('${result.reservation_code}').then(() => alert('예약 번호가 복사되었습니다!'))" class="btn-black" style="padding: 10px 20px; font-size: 1rem; margin-bottom: 1.5rem; cursor: pointer;">
-                                📋 예약 번호 복사하기
+                            <!-- ⭐️ 스크린샷 캡처 버튼 -->
+                            <button type="button" id="btnScreenshot" class="btn-black" style="padding: 15px 20px; font-size: 1.1rem; cursor: pointer; width: 100%; max-width: 350px; margin: 0 auto;">
+                                📸 화면 스크린샷 저장하기
                             </button>
-                            <br>
-                            <button type="button" onclick="location.reload()" class="submit-btn" style="width: auto; padding: 10px 30px;">확인 (초기화)</button>
                         </div>
                     `;
                     formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // html2canvas 라이브러리를 동적으로 로드하여 캡처 기능 실행
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.onload = () => {
+                        document.getElementById('btnScreenshot').addEventListener('click', function() {
+                            const btn = this;
+                            btn.textContent = '사진 저장 중...';
+                            btn.disabled = true;
+
+                            const targetEl = document.getElementById('ticketArea');
+                            
+                            html2canvas(targetEl, { scale: 2 }).then(canvas => {
+                                const link = document.createElement('a');
+                                link.download = `과천물놀이_${hiddenDateInput.value}.png`;
+                                link.href = canvas.toDataURL('image/png');
+                                link.click();
+                                
+                                alert('예약 티켓이 사진첩(갤러리/다운로드 폴더)에 저장되었습니다.\n처음 화면으로 돌아갑니다.');
+                                location.reload(); // 알림 후 자동 새로고침(초기화)
+                            }).catch(err => {
+                                alert('스크린샷 저장 중 오류가 발생했습니다. 직접 화면을 캡처해 주세요.');
+                                btn.textContent = '📸 화면 스크린샷 저장하기';
+                                btn.disabled = false;
+                            });
+                        });
+                    };
+                    document.body.appendChild(script);
+
                 } else {
                     alert(`예약 처리 중 오류가 발생했습니다: \n${result.message || result.error || '알 수 없는 오류'}`);
                     submitBtn.textContent = '예약 신청하기';
