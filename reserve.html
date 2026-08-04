@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- ⭐️ 캐시 방지 메타 태그 추가 (HTML 자체가 폰에 저장되는 것 방지) -->
+    <!-- ⭐️ 캐시 방지 메타 태그 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-
-    <title>과천 물놀이 예약하기</title>
-
-    <!-- ⭐️ CSS 파일에 버전(?v=20260804_01) 추가 -->
-    <link rel="stylesheet" href="css/style.css?v=20260804_01">
     
+    <title>과천 물놀이 예약하기</title>
+    
+    <link rel="stylesheet" href="css/style.css?v=20260804_02">
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
     <style>
@@ -23,32 +21,45 @@
             margin-bottom: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* ⭐️ 생존수영 팝업 스타일 추가 */
-        #survivalPopup {
-            display: none; position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); width: 90%; max-width: 400px; 
-            background-color: #fff; border-radius: 16px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 9999;
-            overflow: hidden; border: 4px solid #17a2b8; /* 물놀이 테마의 청록색 테두리 */
-        }
+        /* ⭐️ 팝업 공통 스타일 및 오버레이 */
         #popupOverlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 9998; }
-        .popup-header { background-color: #17a2b8; color: white; text-align: center; padding: 15px; font-size: 1.2rem; font-weight: bold; }
-        .popup-body { padding: 25px 20px; text-align: center; line-height: 1.7; }
-        .popup-body h3 { color: #0056b3; margin-top: 0; margin-bottom: 10px; font-size: 1.2rem; }
-        .popup-body p { margin: 10px 0; color: #333; font-weight: bold; font-size: 1.05rem; }
+        .popup-header { color: white; text-align: center; padding: 15px; font-size: 1.2rem; font-weight: bold; }
+        .popup-body { padding: 25px 20px; text-align: center; line-height: 1.7; background-color: #fff; }
+        .popup-body h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.2rem; }
+        .popup-body p { margin: 10px 0; font-weight: bold; font-size: 1.05rem; }
         .popup-footer { background-color: #f8f9fa; display: flex; border-top: 1px solid #ddd; }
         .popup-btn { padding: 15px; border: none; background: none; font-size: 1.05rem; cursor: pointer; font-weight: bold; color: #555; transition: background-color 0.2s; }
         .btn-today { flex: 7; border-right: 1px solid #ddd; }
         .btn-close { flex: 3; }
         .popup-btn:hover { background-color: #e2e2e2; }
-        
+
+        /* ⭐️ 사과문 팝업 전용 스타일 (가장 위에 뜸) */
+        #apologyPopup {
+            display: none; position: fixed; top: 48%; left: 50%;
+            transform: translate(-50%, -50%); width: 90%; max-width: 400px; 
+            border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); z-index: 10000;
+            overflow: hidden; border: 4px solid #dc3545; /* 빨간색 테두리 */
+        }
+        #apologyPopup .popup-header { background-color: #dc3545; }
+        #apologyPopup .popup-body h3 { color: #dc3545; }
+
+        /* ⭐️ 생존수영 팝업 전용 스타일 */
+        #survivalPopup {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); width: 90%; max-width: 400px; 
+            border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 9999;
+            overflow: hidden; border: 4px solid #17a2b8;
+        }
+        #survivalPopup .popup-header { background-color: #17a2b8; }
+        #survivalPopup .popup-body h3 { color: #0056b3; }
+
         .survival-list { list-style: none; padding: 0; margin: 15px 0; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; }
         .survival-list li { margin-bottom: 15px; font-size: 0.95rem; }
         .survival-list li:last-child { margin-bottom: 0; }
         .survival-date { color: #d32f2f; font-weight: bold; font-size: 1.05rem; display: block; margin-bottom: 5px; }
-        
+
         @media (min-width: 769px) {
-            #survivalPopup { max-width: 450px; border-radius: 20px; }
+            #apologyPopup, #survivalPopup { max-width: 450px; border-radius: 20px; }
             .popup-header { padding: 20px; font-size: 1.4rem; }
             .popup-body { padding: 30px 25px; }
             .popup-btn { padding: 20px; font-size: 1.1rem; }
@@ -178,8 +189,31 @@
         </div>
     </main>
 
-    <!-- ⭐️ 생존수영 안내 팝업창 HTML 구조 -->
+    <!-- ⭐️ 팝업 오버레이 (공통) -->
     <div id="popupOverlay"></div>
+
+    <!-- ⭐️ [신규] 시스템 사과 팝업창 -->
+    <div id="apologyPopup">
+        <div class="popup-header">
+            📢 시스템 안내
+        </div>
+        <div class="popup-body">
+            <h3>이용에 불편을 드려 죄송합니다.</h3>
+            <p style="font-size: 0.95rem; color: #444; font-weight: normal;">
+                오늘 오전 예약 시스템 업데이트 과정에서<br>
+                일시적으로 예약이 진행되지 않는 문제가 발생했습니다.<br><br>
+                현재는 정상적으로 시스템이 복구되었으며,<br>
+                원활한 예약이 가능하오니 이용에 참고해 주시기 바랍니다.<br>
+                다시 한번 깊은 사과의 말씀을 드립니다.
+            </p>
+        </div>
+        <div class="popup-footer">
+            <button class="popup-btn btn-today" onclick="closeApologyPopup('today')">오늘 하루 보지않기</button>
+            <button class="popup-btn btn-close" onclick="closeApologyPopup('close')">닫기</button>
+        </div>
+    </div>
+
+    <!-- ⭐️ 생존수영 안내 팝업창 -->
     <div id="survivalPopup">
         <div class="popup-header">
             🏊‍♂️ 갈현동 주말 생존수영 안내
@@ -218,15 +252,16 @@
         <div>&copy; 2026 KNY Company. All Rights Reserved.</div>
     </footer>
 
-    <!-- ⭐️ JS 파일에 버전(?v=20260804_01) 추가 -->
-    <script src="js/main.js?v=20260804_01"></script>
-    <script src="js/reserve.js?v=20260804_01"></script>
+    <!-- JS 파일 호출 (버전 업데이트) -->
+    <script src="js/main.js?v=20260804_02"></script>
+    <script src="js/reserve.js?v=20260804_02"></script>
     
-    <!-- ⭐️ 생존수영 팝업 제어 스크립트 -->
+    <!-- ⭐️ 팝업 제어 스크립트 (사과문 & 생존수영 동시 제어) -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const popup = document.getElementById('survivalPopup');
             const overlay = document.getElementById('popupOverlay');
+            const survivalPopup = document.getElementById('survivalPopup');
+            const apologyPopup = document.getElementById('apologyPopup');
             
             function getCookie(name) {
                 let matches = document.cookie.match(new RegExp(
@@ -235,15 +270,48 @@
                 return matches ? decodeURIComponent(matches[1]) : undefined;
             }
 
-            // '오늘 하루 보지않기' 쿠키가 없을 때만 팝업 표시
-            if (!getCookie('hideSurvivalPopupInfo')) {
-                popup.style.display = 'block';
+            // [조건 1] 사과문은 오늘(8월 4일 23:59:59)까지만 띄움
+            const endOfToday = new Date('2026-08-04T23:59:59+09:00');
+            const isApologyActive = new Date() <= endOfToday;
+            
+            const hideSurvival = getCookie('hideSurvivalPopupInfo');
+            const hideApology = getCookie('hideApologyPopup');
+
+            // 쿠키 여부에 따라 팝업 노출 (둘 다 조건에 맞으면 겹쳐서 나옴, 사과문이 위에 표시됨)
+            if (!hideSurvival) {
+                survivalPopup.style.display = 'block';
+                overlay.style.display = 'block';
+            }
+            if (isApologyActive && !hideApology) {
+                apologyPopup.style.display = 'block';
                 overlay.style.display = 'block';
             }
 
+            // 사과문 팝업 닫기 함수
+            window.closeApologyPopup = function(type) {
+                apologyPopup.style.display = 'none';
+                
+                // 생존수영 팝업도 닫혀있다면 오버레이까지 닫기
+                if (survivalPopup.style.display !== 'block') {
+                    overlay.style.display = 'none';
+                }
+                
+                if (type === 'today') {
+                    let tomorrow = new Date();
+                    tomorrow.setHours(23, 59, 59, 999);
+                    document.cookie = "hideApologyPopup=true; expires=" + tomorrow.toUTCString() + "; path=/";
+                }
+            };
+
+            // 생존수영 팝업 닫기 함수
             window.closeSurvivalPopup = function(type) {
-                popup.style.display = 'none';
-                overlay.style.display = 'none';
+                survivalPopup.style.display = 'none';
+                
+                // 사과문 팝업도 닫혀있다면 오버레이까지 닫기
+                if (apologyPopup.style.display !== 'block') {
+                    overlay.style.display = 'none';
+                }
+                
                 if (type === 'today') {
                     let tomorrow = new Date();
                     tomorrow.setHours(23, 59, 59, 999);
