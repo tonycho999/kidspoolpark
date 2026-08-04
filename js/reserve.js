@@ -362,7 +362,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const timeSlot = document.querySelector('input[name="timeSlot"]:checked');
             if (!timeSlot) return alert('예약 시간을 선택해주세요.');
             
-            // 생존수영인 경우 전송 직전 다시 한 번 검증
             if (timeSlot.value.includes('생존수영') && parseInt(peopleInput.value) !== 2) {
                 alert('생존수영 프로그램은 2인 고정입니다.');
                 peopleInput.value = 2;
@@ -411,16 +410,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok && result.success) {
                     const formContainer = reserveForm.parentElement;
                     
-                    // ⭐️ [완벽 수정된 장소명 변환 로직]
-                    // selectedLocation 값에서 앞의 "장소 1" 이나 "장소 2" 만 정확하게 추출합니다.
+                    // ⭐️ 장소명 변환 로직 
                     let shortLocationName = "과천 물놀이장";
-                    
                     if (selectedLocation === "장소 1 (문원 체육공원)") {
                         shortLocationName = "문원";
                     } else if (selectedLocation === "장소 2 (갈현동)") {
                         shortLocationName = "갈현";
                     }
 
+                    // ⭐️ 렌더링 코드: ${shortLocationName} 이 그대로 들어감! (.split 같은거 없음)
                     formContainer.innerHTML = `
                         <div style="text-align: center; padding: 1.5rem 0;">
                             <div id="ticketArea" style="background: #fff; padding: 2rem 1rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #0056b3; margin: 0 auto 1.5rem auto; width: 100%; max-width: 350px;">
@@ -455,7 +453,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                    // 스크린샷 캡처 로직
                     const script = document.createElement('script');
                     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
                     script.onload = () => {
@@ -495,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
+
 
 function execDaumPostcode() {
     new daum.Postcode({
