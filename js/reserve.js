@@ -411,10 +411,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok && result.success) {
                     const formContainer = reserveForm.parentElement;
                     
-                    // ⭐️ [수정된 부분] 장소명을 직관적으로 (문원, 갈현) 변환하여 출력
+                    // ⭐️ [완벽 수정된 장소명 변환 로직]
+                    // selectedLocation 값에서 앞의 "장소 1" 이나 "장소 2" 만 정확하게 추출합니다.
                     let shortLocationName = "과천 물놀이장";
-                    if (selectedLocation.includes("장소 1 (문원 체육공원)")) shortLocationName = "문원";
-                    else if (selectedLocation.includes("장소 2 (갈현동)")) shortLocationName = "갈현";
+                    
+                    if (selectedLocation === "장소 1 (문원 체육공원)") {
+                        shortLocationName = "문원";
+                    } else if (selectedLocation === "장소 2 (갈현동)") {
+                        shortLocationName = "갈현";
+                    }
 
                     formContainer.innerHTML = `
                         <div style="text-align: center; padding: 1.5rem 0;">
